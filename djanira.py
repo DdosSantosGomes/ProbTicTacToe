@@ -12,12 +12,13 @@ from problog.logic import Constant,Var,Term,AnnotatedDisjunction
 # (.venv) Airvanlcaladmin:ProbTicTacToe djanira$ python3 djanira.py
 
 
-# Louis Abraham's random probability distribution and grid generator
+# Random probability distribution and grid generator 
+# Based on Louis Abraham's definitions 
 def generate_cell():
     neutral = random.choice(range(5, 35, 5))
     success = random.choice(range(30, 100 - neutral + 5, 5))
     failure = 100 - neutral - success
-    return success / 100, neutral / 100, failure / 100
+    return success / 100, failure / 100, neutral / 100
 
 def generate_grid():
     return tuple(generate_cell() for _ in range(9))
@@ -36,6 +37,7 @@ probs = generate_grid()
 # p1::square9G; p2::square9B; p3::square9N
 
 mark, x, o, n, board = Term('mark'), Term('x'), Term('o'), Term('n'), Term('board')
+turn = Term('turn')
 query = Term('query')
 
 square1G, square2G, square3G = Var('square1G'), Var('square2G'), Var('square3G')
@@ -52,21 +54,39 @@ square7N, square8N, square9N = Var('square1N'), Var('square2N'), Var('square3N')
 
 # Dict to easily access variable names from index
 square_dict = {
-    "1" : (square1G, square1B, square1N)
+    "1" : (square1G, square1B, square1N),
+    "2" : (square2G, square2B, square2N),
+    "3" : (square3G, square3B, square3N),
+    "4" : (square4G, square4B, square4N),
+    "5" : (square5G, square5B, square5N),
+    "6" : (square6G, square6B, square6N),
+    "7" : (square7G, square7B, square7N),
+    "8" : (square8G, square8B, square8N),
+    "9" : (square9G, square9B, square9N)
 }
 
 p = SimpleProgram()
 
+# Marks and initial state of board
 p += mark(Constant('x'))
 p += mark(Constant('o'))
 p += mark(Constant('n'))
 p += board(n,n,n,n,n,n,n,n,n)
 
-for i in range(1,10):
-    (g, b, n) = probs[i] 
-    # p += AnnotatedDisjunction([square(C,p=0.4), tails(C,p=0.6)], coin(C))
+# Turns
+for i in range(9):
+    p += turn(i)
 
-# p += AnnotatedDisjunction([heads(C,p=0.4), tails(C,p=0.6)], coin(C))
+# Probability distributions for each cell
+for i in range(9):
+    (good, bad, neutral) = probs[i] 
+    p += AnnotatedDisjunction([square_dict[str(i+1),0](p=good), 
+                               square_dict[str(i+1),1](p=bad), 
+                               square_dict[str(i+1),2](p=neutral)])
+    
+# Calculating next moves: Missing 
+
+
 # p += (win << heads(C))
 # p += query(win)
 
