@@ -24,9 +24,16 @@ mark(n).
 mark(o).
 
 %% input possible positions for a move
-1/9::pos(1,1); 1/9::pos(2,1); 1/9::pos(3,1); 1/9::pos(4,1); 1/9::pos(5,1); 1/9::pos(6,1); 1/9::pos(7,1); 1/9::pos(8); 1/9::pos(9,1).
+1/9::pos(1,1); 1/9::pos(2,1); 1/9::pos(3,1); 1/9::pos(4,1); 1/9::pos(5,1); 
+               1/9::pos(6,1); 1/9::pos(7,1); 1/9::pos(8,1); 1/9::pos(9,1).
 
-pos(P,B) :- pos(P,A), turn(B), B is A+1.
+1/9::pos(1,2); 1/9::pos(2,2); 1/9::pos(3,2); 1/9::pos(4,2); 1/9::pos(5,2); 
+               1/9::pos(6,2); 1/9::pos(7,2); 1/9::pos(8,2); 1/9::pos(9,2).
+
+1/9::pos(1,3); 1/9::pos(2,3); 1/9::pos(3,3); 1/9::pos(4,3); 1/9::pos(5,3); 
+               1/9::pos(6,3); 1/9::pos(7,3); 1/9::pos(8,3); 1/9::pos(9,3).
+
+% pos(P,B) :- pos(P,A), turn(B), B is A+1.
 
 %% calculate next move
 board(x,S2,S3,S4,S5,S6,S7,S8,S9,B) :- board(n,S2,S3,S4,S5,S6,S7,S8,S9,A), pos(1,B), square1G, turn(B), B is A+1.
@@ -67,7 +74,9 @@ win(B) :- board(x,S2,S3,x,S5,S6,x,S8,S9,B).
 win(B) :- board(S1,x,S3,S4,x,S6,S7,x,S9,B).
 win(B) :- board(S1,S2,x,S4,S5,x,S7,S8,x,B).
 win(B) :- board(x,S2,S3,S4,x,S6,S7,S8,x,B).
-win(B) :- board(x,S2,S3,S4,x,S6,x,S8,S9,B).
+win(B) :- board(x,S2,S3,S4,x,S6,S7,S8,x,B).
+
+% win :- win(_).
 
 % lose condition
 lose(B) :- board(o,o,o,S4,S5,S6,S7,S8,S9,B).
@@ -77,7 +86,7 @@ lose(B) :- board(o,S2,S3,o,S5,S6,o,S8,S9,B).
 lose(B) :- board(S1,o,S3,S4,o,S6,S7,o,S9,B).
 lose(B) :- board(S1,S2,o,S4,S5,o,S7,S8,o,B).
 lose(B) :- board(o,S2,S3,S4,o,S6,S7,S8,o,B).
-lose(B) :- board(o,S2,S3,S4,o,S6,o,S8,S9,B).
+lose(B) :- board(o,S2,S3,S4,o,S6,S7,S8,o,B).
 
 % strategy
 pos(1,1).
@@ -85,6 +94,6 @@ pos(2,2).
 pos(3,3).
 
 % queries
-query(board(x,x,x,n,n,n,n,n,n,3)).
-
+% query(board(x,x,x,n,n,n,n,n,n,3)).
+query(win(1)).
 

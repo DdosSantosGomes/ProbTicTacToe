@@ -1,0 +1,12 @@
+mark(x).
+mark(o).
+mark(n).
+
+cell(1). ... cell(9).
+
+board(n,n,n,n,n,n,n,n,n).
+turn(1). ... turn(9).
+
+pGood :: G(1); pBad :: B(1); pNeutral :: N(1) :- cell(1).
+... to 9
+

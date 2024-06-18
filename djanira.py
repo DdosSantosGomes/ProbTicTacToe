@@ -1,8 +1,8 @@
-import random
+import louiswork
 
 from problog import get_evaluatable
 from problog.program import SimpleProgram
-from problog.logic import Constant,Var,Term,AnnotatedDisjunction
+from problog.logic import Constant,Var,Term,AnnotatedDisjunction 
 
 # How to get this to work: 
 # In vscode search bar: type ">" and search for "Python: Create Environment"
@@ -14,16 +14,7 @@ from problog.logic import Constant,Var,Term,AnnotatedDisjunction
 
 # Random probability distribution and grid generator 
 # Based on Louis Abraham's definitions 
-def generate_cell():
-    neutral = random.choice(range(5, 35, 5))
-    success = random.choice(range(30, 100 - neutral + 5, 5))
-    failure = 100 - neutral - success
-    return success / 100, failure / 100, neutral / 100
-
-def generate_grid():
-    return tuple(generate_cell() for _ in range(9))
-
-probs = generate_grid() 
+probs = louiswork.generate_grid() 
 
 # Example from tutorial: this works 
 # coin,heads,tails,win,query = Term('coin'),Term('heads'),Term('tails'),Term('win'),Term('query')
@@ -37,18 +28,34 @@ probs = generate_grid()
 
 
 # Initializing terms and variables of the Problog program
-mark, cell, board = Term('mark'), Term('cell'), Term('board')
+mark, cell, board, win = Term('mark'), Term('cell'), Term('board'), Term('win')
 G, B, N = Term('G'), Term('B'), Term('N')
+
+one, two, three = Constant('one'), Constant('two'), Constant('three')
+four, five, six = Constant('four'), Constant('five'), Constant('six')
+seven, eight, nine = Constant('seven'), Constant('eight'), Constant('nine')
+
+# Dict to easily access variable names from index
+square_dict = {
+    "1" : one,
+    "2" : two,
+    "3" : three,
+    "4" : four,
+    "5" : five,
+    "6" : six,
+    "7" : seven,
+    "8" : eight,
+    "9" : nine
+}
 
 x = Constant('x')
 o = Constant('o')
 n = Constant('n')
 
-for i in range(9):
-    ci = Constant(str(i))
-
 turn = Term('turn')
 query = Term('query')
+
+C = Var('C')
 
 p = SimpleProgram()
 
@@ -57,33 +64,32 @@ p += mark(x)
 p += mark(o)
 p += mark(n)
 
-for i in range(9):
-    p += cell(ci) 
-
-p += board(n,n,n,n,n,n,n,n,n)
+p += board(n,n,n,n,n,n,n,n,n,0)
 
 # Turns
 for i in range(9):
     p += turn(i)
 
 # Probability distributions for each cell
-# This gives an error still: TypeError: AnnotatedDisjunction.__init__() missing 1 required positional argument: 'body'
-for i in range(9):
-    (good, bad, neutral) = probs[i] 
-    s = str(i)
-    p += AnnotatedDisjunction([G(s,p=good), 
-                               B(s,p=bad),
-                               N(s,p=neutral)])
+# for i in range(9): 
+#     c = square_dict[str(i+1)]
+#     (good, bad, neutral) = probs[i]
+#     p += AnnotatedDisjunction([G(C, p=good), 
+#                                B(C, p=bad), 
+#                                N(C, p=neutral)],
+#                                C is c)
     
 # Calculating next moves: Missing 
 
 # Defining winning and losing: Missing
     
+p += (win << board(n,n,n,n,n,n,n,n,n,0))
+    
 # Queries: Missing
 
-# p += (win << heads(C))
-# p += query(win)
-
+p += query(win)
+#p += query(turn(5))
+p += query(turn)
 
 val = get_evaluatable().create_from(p).evaluate()
 
