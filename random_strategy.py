@@ -13,7 +13,7 @@ def getUniformProbDist(state, turn_nr):
         probs += "1/{}::pos({},{})".format(total,str(i),turn_nr)
         if i < total - 1: 
             probs += "; "
-    return probs + "."
+    return probs + ".\n"
 
 
 
