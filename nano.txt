@@ -1,0 +1,25 @@
+% one cell - this works!
+
+turn(x,1).
+turn(o,2).
+turn(x,3).
+turn(o,4).
+
+board(n,0).
+
+0.65::square1G(N); 0.05::square1B(N); 0.3::square1N(N).
+
+board(x,B) :- board(n,A), turn(x,B), square1G(B), B is A+1.
+board(o,B) :- board(n,A), turn(o,B), square1G(B), B is A+1.
+
+board(o,B) :- board(n,A), turn(x,B), square1B(B), B is A+1.
+board(x,B) :- board(n,A), turn(o,B), square1B(B), B is A+1.
+
+board(n,B) :- board(n,A), turn(_,B), square1N(B), B is A+1.
+
+board(x,B) :- board(x,A), turn(_,B), B is A+1.
+board(o,B) :- board(o,A), turn(_,B), B is A+1.
+
+win1 :- board(x,1).
+query(win1).
+
