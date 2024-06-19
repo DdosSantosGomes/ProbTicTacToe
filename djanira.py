@@ -68,16 +68,16 @@ p += board(n,n,n,n,n,n,n,n,n,0)
 
 # Turns
 for i in range(9):
-    p += turn(i)
+    p += turn(Constant(i))
 
 # Probability distributions for each cell
-# for i in range(9): 
-#     c = square_dict[str(i+1)]
-#     (good, bad, neutral) = probs[i]
-#     p += AnnotatedDisjunction([G(C, p=good), 
-#                                B(C, p=bad), 
-#                                N(C, p=neutral)],
-#                                C is c)
+for i in range(9): 
+    c = square_dict[str(i+1)]
+    (good, bad, neutral) = probs[i]
+    p += AnnotatedDisjunction([G(C, p=good), 
+                               B(C, p=bad), 
+                               N(C, p=neutral)],
+                               C is c)
     
 # Calculating next moves: Missing 
 
@@ -88,8 +88,8 @@ p += (win << board(n,n,n,n,n,n,n,n,n,0))
 # Queries: Missing
 
 p += query(win)
-#p += query(turn(5))
-p += query(turn)
+p += query(turn(5))
+p += query(turn(10))
 
 val = get_evaluatable().create_from(p).evaluate()
 
