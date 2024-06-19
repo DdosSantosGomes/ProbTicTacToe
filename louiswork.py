@@ -39,6 +39,18 @@ def generate_grid():
 def apply(state, cell, player):
     return tuple(player if i == cell else v for i, v in enumerate(state))
 
+grid = (
+    (0.65, 0.05, 0.3),
+    (0.65, 0.2, 0.15),
+    (0.55, 0.3, 0.15),
+    (0.3, 0.2, 0.5),
+    (0.3, 0.15, 0.55),
+    (0.35, 0.05, 0.6),
+    (0.3, 0.05, 0.65),
+    (0.35, 0.2, 0.45),
+    (0.45, 0.1, 0.45),
+)
+
 def winner(state):
     for i in range(3):
         if state[i] == state[i + 3] == state[i + 6] and state[i] is not None:
@@ -100,4 +112,11 @@ grid = (
     (0.45, 0.1, 0.45),
 )
 
-print(value(grid))
+# initstate = (None,) * 9
+# # print(value(grid))
+
+# x=apply(initstate, 2, "x")
+# print(x)
+
+# print(value(grid, x))
+# print(winner(("x","x","x",None,None,None,None,None,None)))
