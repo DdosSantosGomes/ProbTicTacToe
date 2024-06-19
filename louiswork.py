@@ -51,7 +51,7 @@ grid = (
     (0.45, 0.1, 0.45),
 )
 
-def winner(state):
+def winner(state): # slightly modified to include a tie condition.
     for i in range(3):
         if state[i] == state[i + 3] == state[i + 6] and state[i] is not None:
             return state[i]
@@ -64,6 +64,8 @@ def winner(state):
         return state[0]
     if state[2] == state[4] == state[6] and state[2] is not None:
         return state[2]
+    if available_cells(state) == []:
+        return "t"
     return None
 
 def available_cells(state):
