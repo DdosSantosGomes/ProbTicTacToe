@@ -1,7 +1,9 @@
 import random
 
-from problog.program import PrologString
 from problog import get_evaluatable
+from problog.program import PrologString
+
+from problog_program_syntax import *
 
 
 class ProbTicTacToe:
@@ -9,16 +11,27 @@ class ProbTicTacToe:
     
     """
 
+    # term names, centralized
+    SQUARE_GOOD = 'square_good'
+    SQUARE_NEUTRAL = 'square_neutral'
+    SQUARE_BAD = 'square_bad'
+    TURN = 'turn'
+    BOARD = 'board'
+    CHOOSE = 'choose'
+    WIN = 'win'
+    LOSE = 'lose'
+
     def __init__(self, grid_size = 3, max_turns = None): 
         self.grid_size = grid_size
         self.max_turns = self.grid_size ** 2 + 1 if max_turns is None else max_turns
-        self.program = ""
         self.__build_program()
 
     def __build_program(self):
+        self.program = ""
+        self.__init_board()
         self.__grid()
         self.__turns()
-        self.__board()
+        self.__choose()
         self.__moves()
         self.__win_condition()
         self.__lose_condition()
@@ -27,13 +40,15 @@ class ProbTicTacToe:
         pass
 
     def query(self, *queries): # query the ProbLog program. Give the queries in ProbLog syntax
+        results = {}
         for query in queries:
-            self.program += "query({q}).".format(q = query)
-        try:
-            result = get_evaluatable().create_from(PrologString(self.program)).evaluate()
-            return result
-        except:
-            raise Exception("Please give the queries in valid ProbLog syntax (e.g. 'win(2)')!")
+            query_str = 'query({q}).'.format(q = query)
+            try:
+                result = get_evaluatable().create_from(PrologString(self.program + query_str)).evaluate()
+            except:
+                raise Exception(query + ' is not valid Prolog!')
+            results.update(result)
+        return results
 
     def __generate_grid(self):
         def generate_square():
@@ -44,43 +59,105 @@ class ProbTicTacToe:
         return tuple(generate_square() for _ in range(self.grid_size ** 2))
     
     def __grid(self):
-        self.program += "%% probabilities for each square\n"
+        self.program += '%% probabilities for each square\n'
         grid = self.__generate_grid()
-        for i in range(self.grid_size ** 2): # iterate over the cells
-            current_cell = grid[i]
+        for cell_no in range(self.grid_size ** 2): # iterate over the cells
+            current_cell = grid[cell_no]
             p_good = current_cell[0]
-            self.program += str(p_good) + "::square" + str(i+1) + "good(N); "
+            a1 = probabilistic_fact(p_good, function(self.SQUARE_GOOD, cell_no+1, 'A'))
             p_neutral = current_cell[1]
-            self.program += str(p_neutral) + "::square" + str(i+1) + "neutral(N); "
+            a2 = probabilistic_fact(p_neutral, function(self.SQUARE_NEUTRAL, cell_no+1, 'A'))
             p_bad = current_cell[2]
-            self.program += str(p_bad) + "::square" + str(i+1) + "bad(N).\n"
-        self.program += "\n"
+            a3 = probabilistic_fact(p_bad, function(self.SQUARE_BAD, cell_no+1, 'A'))
+            self.program += annotated_disjunction_with_body( 
+                annotated_disj = annotated_disjunction(a1, a2, a3),
+                body = function(self.TURN, '_', 'A')
+            )
+        self.program += '\n'
 
     def __turns(self):
-        self.program += "%% possible turns\n"
+        self.program += '%% possible turns\n'
         for turn_no in range(1, self.max_turns + 1):
             player = "x" if turn_no % 2 == 1 else "o"
-            self.program += "turn(" + player + "," + str(turn_no) + ").\n"
-        self.program += "\n"
+            self.program += fact(function(self.TURN, player, turn_no))
+        self.program += '\n'
 
-    def __board(self):
-        self.program += "%% board\n"
-        self.program += "board(" + ",".join("n" * (self.grid_size ** 2)) + ",0).\n\n" 
+    def __init_board(self):
+        self.program += '%% board\n'
+        self.program += fact(function(self.BOARD, *(('n',) * (self.grid_size ** 2) + (0,)) ))
+        self.program += '\n'
+
+    def __choose(self):
+        self.program += '%% available positions\n'
+        choose_all, chosen = '', ''
+        for cell_no in range(1, self.grid_size ** 2 + 1):
+            choose_all += clause(
+                head = function(self.CHOOSE, cell_no, 'B'),
+                body = conj(
+                    function(self.CHOOSE, cell_no, 'A'),
+                    function(self.SQUARE_NEUTRAL, cell_no, 'B'),
+                    function(self.TURN, '_', 'B')
+                ),
+                constraint = 'B is A+1'
+            )
+            # is_available_start += fact(function(self.CHOOSE, cell_no, 0))
+            chosen += clause(
+                head = function(self.CHOOSE, cell_no, 'B'),
+                body = conj(
+                    
+                ),
+                constraint = 'B is A+1'
+            )
+        self.program += choose_all
+        self.program += chosen
+        self.program += '\n'
 
     def __moves(self):
-        self.program += "%% moves\n"
-        for i in range(1, self.grid_size ** 2 + 1):
-            before = ",".join(["S" + str(j) for j in range(1, i)]) + "," if i > 1 else "" # cells before Si
-            after = "," + ",".join(["S" + str(k) for k in range(i+1, self.grid_size ** 2 + 1)]) if i < self.grid_size ** 2 else "" # cells after Si
-            prev_board = "board({prev}n{succ},A)".format(prev = before, succ = after) # the state of the board prior to the move
-            next_board_x = "board({prev}x{succ},B)".format(prev = before, succ = after)
-            next_board_o = "board({prev}o{succ},B)".format(prev = before, succ = after)
-            next_board_n = "board({prev}n{succ},B)".format(prev = before, succ = after)
-            x_good = "{next_state} :- {last_state}, turn(x,B), square{no}good(B), B is A+1.\n".format(next_state = next_board_x, last_state = prev_board, no = str(i))
-            o_good = "{next_state} :- {last_state}, turn(o,B), square{no}good(B), B is A+1.\n".format(next_state = next_board_o, last_state = prev_board, no = str(i))
-            x_bad = "{next_state} :- {last_state}, turn(x,B), square{no}bad(B), B is A+1.\n".format(next_state = next_board_o, last_state = prev_board, no = str(i))
-            o_bad = "{next_state} :- {last_state}, turn(o,B), square{no}bad(B), B is A+1.\n".format(next_state = next_board_x, last_state = prev_board, no = str(i))
-            neutral = "{next_state} :- {last_state}, turn(_,B), square{no}neutral(B), B is A+1.\n".format(next_state = next_board_n, last_state = prev_board, no = str(i))
+        self.program += '%% moves\n'
+        for cell_no in range(1, self.grid_size ** 2 + 1):
+            before = ['S' + str(j) for j in range(1, cell_no)]
+            after = ['S' + str(k) for k in range(cell_no+1, self.grid_size ** 2 + 1)]
+
+            prev_board = function(self.BOARD, *(before + ['n'] + after + ['A']))
+            next_board_x = function(self.BOARD, *(before + ['x'] + after + ['B']))
+            next_board_o = function(self.BOARD, *(before + ['o'] + after + ['B']))
+            next_board_n = function(self.BOARD, *(before + ['n'] + after + ['B']))
+
+            x_good = clause(
+                head = next_board_x,
+                body = conj(
+                    prev_board, function(self.TURN, 'x', 'B'), function(self.SQUARE_GOOD, cell_no, 'B'), function(self.CHOOSE, cell_no, 'A')
+                ),
+                constraint = 'B is A+1'
+            )
+            o_good = clause(
+                head = next_board_o,
+                body = conj(
+                    prev_board, function(self.TURN, 'o', 'B'), function(self.SQUARE_GOOD, cell_no, 'B'), function(self.CHOOSE, cell_no, 'A')
+                ),
+                constraint = 'B is A+1'
+            )
+            x_bad = clause(
+                head = next_board_x,
+                body = conj(
+                    prev_board, function(self.TURN, 'o', 'B'), function(self.SQUARE_BAD, cell_no, 'B'), function(self.CHOOSE, cell_no, 'A')
+                ),
+                constraint = 'B is A+1'
+            )
+            o_bad = clause(
+                head = next_board_o,
+                body = conj(
+                    prev_board, function(self.TURN, 'x', 'B'), function(self.SQUARE_BAD, cell_no, 'B'), function(self.CHOOSE, cell_no, 'A')
+                ),
+                constraint = 'B is A+1'
+            )
+            neutral = clause(
+                head = next_board_n,
+                body = conj(
+                    prev_board, function(self.TURN, '_', 'B'), function(self.SQUARE_NEUTRAL, cell_no, 'B'), function(self.CHOOSE, cell_no, 'A')
+                ),
+                constraint = 'B is A+1'
+            )
             self.program = self.program + x_good + o_good + x_bad + o_bad + neutral
         self.program += "\n"     
 
@@ -123,8 +200,6 @@ class ProbTicTacToe:
             raise Exception("Lose condition undefined for grid sizes > 3. Sorry!")
         
 
-
-    
 class Strategy:
     pass
 
@@ -133,7 +208,8 @@ class Test:
     pass
 
 if __name__ == "__main__": 
-    game = ProbTicTacToe(grid_size=2)
+    game = ProbTicTacToe(grid_size=3)
     # print(get_evaluatable().create_from(game.problog_program).evaluate())
+    print(game.program)
+    # print(game.query("win(1)","win(3)"))
     # print(game.program)
-    print(game.query("win(2)"))
