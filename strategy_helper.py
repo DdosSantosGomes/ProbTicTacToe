@@ -6,8 +6,12 @@ import game_logic
 # 1/9::pos(1,1); 1/9::pos(2,1); 1/9::pos(3,1); 1/9::pos(4,1); 1/9::pos(5,1); 
 #                1/9::pos(6,1); 1/9::pos(7,1); 1/9::pos(8,1); 1/9::pos(9,1).
 
-# Returns Problog-style string of unif. prob. dist. given list of available cell nrs
-def stringOfProbDist(av_cell_nrs, turn_nr):
+
+def string_of_prob_dist(av_cell_nrs, turn_nr):
+    """
+    Returns Problog-style string of the uniform probability distribution over 
+    a given list of cell numbers, given the current turn. 
+    """
     total = len(av_cell_nrs)
     probs = ""
     for i in range(total):
@@ -17,12 +21,20 @@ def stringOfProbDist(av_cell_nrs, turn_nr):
     return probs + ".\n"
 
 # Uniform distribution containing all available moves
-def stringForAllMoves(state, turn_nr):
+def string_for_all_moves(state, turn_nr):
+    """
+    Returns Problog-style string of the uniform probability distribution 
+    over all available cells given the current state and turn. 
+    """
     cells = [c + 1 for c in louiswork.available_cells(state)]
-    return stringOfProbDist(cells, turn_nr)
+    return string_of_prob_dist(cells, turn_nr)
 
 # Get adjacent cells on grid (hardcoded for 3x3)
-def adjacentCells(cell_nr):
+def adjacent_cells(cell_nr):
+    """
+    Returns the cell numbers surrounding a given cell number 
+    (including diagonals), on a 3x3 grid . 
+    """
     if not (cell_nr in range(1,10)):
         return "Off the grid!"
     
