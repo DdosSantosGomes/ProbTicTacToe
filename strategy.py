@@ -65,8 +65,6 @@ class Strategy(ABC):
         print("win_term: ", win_term)
         print("q: ", q)
 
-        self.problog_program.update_choices(cells)
-
         probs = {}
 
         for i in range(len(cells)): 
