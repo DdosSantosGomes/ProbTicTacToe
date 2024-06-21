@@ -8,9 +8,8 @@ class ProbTicTacToe:
     with attributes grid_size, max_turns and grid.
     """
     
-    def __init__(self, grid_size = 3, max_turns = 0): 
+    def __init__(self, grid_size = 3): 
         self.grid_size = grid_size
-        self.max_turns = self.grid_size ** 2 + 1 if max_turns == 0 else max_turns
         self.grid = self.__generate_grid()
 
     def __generate_grid(self):
@@ -24,8 +23,8 @@ class ProbTicTacToe:
 
 class Game:
 
-    def __init__(self, grid_size = 3, max_turns = 0):
-        self.instance = ProbTicTacToe(grid_size, max_turns)
+    def __init__(self, grid_size = 3):
+        self.instance = ProbTicTacToe(grid_size)
 
     def play_game(self, start, strategy):
         pass

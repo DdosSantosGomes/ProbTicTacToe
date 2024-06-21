@@ -15,9 +15,19 @@ class ProbabilityValueException(Exception):
 constant_regex = '[a-z]+_[a-z]+|[a-z]+'
 var_regex = '[A-Z]+[0-9]*'
 
+def variable(name):
+    """
+    Returns a variable represented as a string - note that only strings of uppercase letters, possibly followed by numbers, are accepted for simplicity.
+    
+    This does not return valid ProbLog code, it is to be used in combination with the other functions.
+    """
+    if re.fullmatch(var_regex, name) is None:
+        raise NameFormatException('Please only use uppercase letters, followed possibly by numbers, to specify a variable! {} is not it'.format(name))
+    return name
+
 def constant(name):
     """
-    Returns a constant represented as a string - note that only strings of lowercase letters are accepted for simplicity.
+    Returns a constant represented as a string - note that only strings of lowercase letters, at most with an underscore, are accepted for simplicity.
     
     This does not return valid ProbLog code, it is to be used in combination with the other functions.
     """
@@ -60,7 +70,7 @@ def conj(*terms):
     Returns conjunction of given terms (constant or function) as a string, which is not valid ProbLog.
     To be used with clause or probabilistic_clause.
     """
-    # calling fact(t) is an ugly workaround to check that the terms are valid without making case distinctions
+    # calling fact(t) is a workaround to check that the terms are syntactically valid without making case distinctions
     return ", ".join([ fact(t)[:len(t)] for t in terms ]) 
 
 def disj(*terms):
@@ -68,7 +78,14 @@ def disj(*terms):
     Returns disjunction of given terms (constant or function) as a string, which is not valid ProbLog.
     To be used with clause or probabilistic_clause.
     """
+    # calling fact(t) is a workaround to check that the terms are syntactically valid without making case distinctions
     return "; ".join([ fact(t)[:len(t)] for t in terms ])
+
+def simple_constraint(var1, var2):
+    """
+    Returns a constraint of the form 'var1 is var2+1'.
+    """
+    return '{A} is {B}+1'.format(A=var1, B=var2)
 
 def clause(head, body, constraint = ""):
     """
@@ -76,7 +93,7 @@ def clause(head, body, constraint = ""):
 
     Head: should be a term.
     Body: term, or conjunction or disjunction of terms (use conj or disj).
-    Constraint: should be e.g. of the form 'B' is 'A+1'.
+    Constraint: should be e.g. of the form 'B' is 'A+1'. Use simple_constraint for that
     """
     if constraint != "":
         return "{h} :- {b}, {c}.\n".format(h=head, b=body, c=constraint) 
@@ -89,7 +106,7 @@ def probabilistic_clause(head, body, prob, constraint = ""):
 
     Head: should be a term.
     Body: term, or conjunction or disjunction of terms (use conj or disj).
-    Constraint: should be e.g. of the form 'B' is 'A+1'.
+    Constraint: should be e.g. of the form 'B' is 'A+1'. Use simple_constraint for that
     """
     if constraint != "":
         return "{p} :: {h} :- {b}, {c}.\n".format(p=prob, h=head, b=body, c=constraint) 
@@ -106,7 +123,13 @@ def annotated_disjunction(*prob_facts):
     return "; ".join([ p_f[:-2] for p_f in prob_facts ]) + ".\n"
 
 def annotated_disjunction_with_body(annotated_disj, body):
-    return clause(annotated_disj[:len(annotated_disj)-2], body)
+    """
+    Returns a ProbLog annotated disjunction with the given body.
+
+    Use in combination with annotated_disjunction for the head,
+    and conj or disj of terms for the body.
+    """
+    return clause(annotated_disj[:-2], body)
 
 if __name__ == "__main__":
     reg1 = '[1-9][0-9]*'
