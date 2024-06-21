@@ -2,6 +2,8 @@ import random
 from abc import ABC, abstractmethod
 from problog_program_builder import ProbLogProgram
 import strategy_helper as sh
+import problog_utils
+import names
 
 
 class Strategy(ABC):
@@ -20,15 +22,56 @@ class Strategy(ABC):
             failure = 100 - neutral - success
             return success / 100, neutral / 100, failure / 100
         return tuple(generate_square() for _ in range(9))
-
+    
     @abstractmethod
-    def do(self, state, max_turns):
+    def choose_cells(self, state):
         pass
 
-    def choose_cells(self, state):
+    def win_conds(self, state, chosen_cells, max_turns):
         """
-        Selects a subset of the available cells; returns Problog 
-        distr. string (annotated disjunction).
+        Returns a list of Problog clauses stating winning conditions for each chosen cell.
         """
-        cells = sh.cells_aggressive(state, 0, mode="WF")
-        return sh.string_of_choice_dist(cells, 0)
+        win_preds_per_cell = [sh.win_condition(c) for c in chosen_cells]
+        clauses = []
+        for win_preds_of_c in win_preds_per_cell: 
+            cl = problog_utils.clause(
+                head = problog_utils.function(names.WIN, problog_utils.constant(max_turns)),
+                body = problog_utils.term_disj(
+                    *[ problog_utils.function(win_pred, problog_utils.constant(max_turns)) for win_pred in win_preds_of_c ]
+                    )
+            )
+            clauses.append(cl)
+        return clauses
+
+    def run(self, state, max_turns):
+        """
+        Runs the Problog program with the given state using each of the cells 
+        from the preferred list as evidence; chooses the cell maximizing the 
+        probability of winning according to the winning conditions. 
+        """
+
+        cells = self.choose_cells(state)
+
+        print("cells: ", cells)
+
+        w_clauses = self.win_conds(state, cells, max_turns) 
+
+        
+        print("w_clauses: ", w_clauses)
+
+        win_term = problog_utils.function(names.WIN, problog_utils.constant(max_turns))
+        q = problog_utils.query(win_term)
+
+        print("win_term: ", win_term)
+        print("q: ", q)
+
+        self.problog_program.update_choices(cells)
+
+        probs = {}
+
+        for i in range(len(cells)): 
+            probs[cells[i]] = self.problog_program.query(q, evidence=w_clauses[i])[win_term]
+
+        return max(probs, key=probs.get)
+    
+    
