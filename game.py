@@ -9,6 +9,7 @@ class Game:
         self.instance = ProbTicTacToe(grid_size)
 
     def play_game(self, move, state, strategy : Strategy):
+        grid = self.instance.grid
         if move == "e":
             move = random.choice(("x","o"))
         while louiswork.winner(state) == None:
