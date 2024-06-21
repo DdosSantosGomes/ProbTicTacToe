@@ -33,7 +33,8 @@ def simulate(player):
     gameswono = 0
     gamestied = 0 
     for _ in range(1000):
-        result = play_game(player, louiswork.grid,(None,) * 9)
+        grid = louiswork.generate_grid
+        result = play_game(player, grid, louiswork.grid,(None,) * 9)
         if result == "x":
             gameswonx += 1
         elif result == "o":
