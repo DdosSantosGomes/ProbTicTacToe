@@ -1,11 +1,5 @@
 import louiswork 
-
 import names
-
-# Example (init game): uniform dist of all tiles 
-# 1/9::pos(1,1); 1/9::pos(2,1); 1/9::pos(3,1); 1/9::pos(4,1); 1/9::pos(5,1); 
-#                1/9::pos(6,1); 1/9::pos(7,1); 1/9::pos(8,1); 1/9::pos(9,1).
-
 
 def string_of_choice_dist(av_cell_nrs, turn_nr):
     """
@@ -114,21 +108,11 @@ def cells_aggressive(state, turn_nr, mode="WF"):
     return chosen_cells 
 
 
-# win1(B) :- board(x,x,x,S4,S5,S6,S7,S8,S9,B).
-# win2(B) :- board(S1,S2,S3,x,x,x,S7,S8,S9,B).
-# win3(B) :- board(S1,S2,S3,S4,S5,S6,x,x,x,B).
-
-# win4(B) :- board(x,S2,S3,x,S5,S6,x,S8,S9,B).
-# win5(B) :- board(S1,x,S3,S4,x,S6,S7,x,S9,B).
-# win6(B) :- board(S1,S2,x,S4,S5,x,S7,S8,x,B).
-
-# win7(B) :- board(x,S2,S3,S4,x,S6,S7,S8,x,B).
-# win8(B) :- board(S1,S2,x,S4,x,S6,x,S8,S9,B).
-
-def win_condition(chosen_cell): 
+def win_condition(state, chosen_cell): 
     """
-    Returns a set of winning predicates for which the chosen 
-    cell contributes to the winning configuration.
+    Returns a set of winning predicates that are reachable from the 
+    current state and for which the chosen cell contributes to the 
+    winning configuration.
     """
 
     # Indices of "x" marks in winning states
@@ -143,7 +127,24 @@ def win_condition(chosen_cell):
         names.WIN8 : [3,5,7]
     }
 
-    return [w for w in win_states if chosen_cell in win_states[w]]
+    possible_wins = []
+    impossible = False
+
+    for w in win_states:
+        x_indices = win_states[w]
+        if chosen_cell in x_indices: 
+            impossible = False
+
+            # Don't count winning condition if it is unreachable
+            for i in x_indices: 
+                if state[i-1] == "o":
+                    impossible = True
+                    break
+            
+            if impossible == False: 
+                possible_wins.append(w) 
+
+    return possible_wins
 
 # Some tests
 nice_state = ("x", "o", "x", None, None, None, "x", None, None)
@@ -154,8 +155,9 @@ nice_cell_nrs = [4,5,6,8,9]
 # print("next to 6: ", adjacent_cells(6))
 # print("next to 5: ", adjacent_cells(5))
 # print("illegal: ", adjacent_cells(11))
-print("winning fast: ", cells_aggressive(nice_state, 3))
-print("conquer-the-board: ", cells_aggressive(nice_state, 3, mode="CB"))
+# print("winning fast: ", cells_aggressive(nice_state, 3))
+# print("conquer-the-board: ", cells_aggressive(nice_state, 3, mode="CB"))
+print(win_condition(nice_state,5))
 
 
 

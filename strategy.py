@@ -31,7 +31,7 @@ class Strategy(ABC):
         """
         Returns a list of Problog clauses stating winning conditions for each chosen cell.
         """
-        win_preds_per_cell = [sh.win_condition(c) for c in chosen_cells]
+        win_preds_per_cell = [sh.win_condition(state, c) for c in chosen_cells]
         clauses = []
         for win_preds_of_c in win_preds_per_cell: 
             cl = problog_utils.clause(
