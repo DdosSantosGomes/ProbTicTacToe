@@ -2,19 +2,8 @@ from problog import get_evaluatable
 from problog.program import PrologString
 
 from problog_program.utils import *
+from names import *
 
-# term names, centralized
-SQUARE_GOOD = 'square_good'
-SQUARE_NEUTRAL = 'square_neutral'
-SQUARE_BAD = 'square_bad'
-TURN = 'turn'
-BOARD = 'board'
-CHOOSE = 'choose'
-WIN = 'win'
-LOSE = 'lose'
-A = 'A'
-B = 'B'
-ANY = '_'
 
 class ProbLogProgram:
     """
