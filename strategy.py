@@ -1,6 +1,6 @@
 import random
 from abc import ABC, abstractmethod
-from problog_program.program_builder import ProbLogProgram
+from problog_program_builder import ProbLogProgram
 
 
 class Strategy(ABC):
@@ -23,4 +23,3 @@ class Strategy(ABC):
     @abstractmethod
     def do(self, state):
         pass
-    

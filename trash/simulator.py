@@ -1,4 +1,4 @@
-import strategies.louiswork as louiswork
+import louiswork as louiswork
 import random
 # "we" always play "x"
 # "computer" always plays "o"

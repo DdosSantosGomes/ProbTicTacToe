@@ -1,5 +1,5 @@
-import strategies.louiswork as louiswork
-import strategies.strategy_helper as sh
+import louiswork as louiswork
+import strategy_helper as sh
 
 # Example (init game): uniform dist of all tiles 
 # 1/9::pos(1,1); 1/9::pos(2,1); 1/9::pos(3,1); 1/9::pos(4,1); 1/9::pos(5,1); 

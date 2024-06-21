@@ -1,6 +1,6 @@
 from strategy import Strategy
-from ..problog_program import names
-from ..problog_program import utils
+from . import names
+from . import problog_utils
 import strategy_helper as sh
 
 
@@ -27,9 +27,9 @@ class WinFastStrategy(Strategy):
         win_preds_per_cell = [sh.win_condition(state, c) for c in chosen_cells]
         clauses = []
         for win_preds_of_c in win_preds_per_cell: 
-            cl = utils.clause(
-                head = utils.function(names.WIN, utils.constant(max_turns)),
-                body = utils.term_disj(*[ utils.function(win_pred, utils.constant(max_turns)) for win_pred in win_preds_of_c ])
+            cl = problog_utils.clause(
+                head = problog_utils.function(names.WIN, problog_utils.constant(max_turns)),
+                body = problog_utils.term_disj(*[ problog_utils.function(win_pred, problog_utils.constant(max_turns)) for win_pred in win_preds_of_c ])
             )
             clauses.append(cl)
         return clauses
@@ -43,8 +43,8 @@ class WinFastStrategy(Strategy):
         cells = self.choose_cells(self.state)
         w_clauses = self.win_conds(self, state, cells, max_turns) 
 
-        win_term = utils.function(names.WIN, utils.constant(max_turns))
-        q = utils.query(win_term)
+        win_term = problog_utils.function(names.WIN, problog_utils.constant(max_turns))
+        q = problog_utils.query(win_term)
 
         self.problog_program.update_choices(cells)
 

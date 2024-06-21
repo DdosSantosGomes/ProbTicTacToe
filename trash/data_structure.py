@@ -1,4 +1,4 @@
-import strategies.louiswork as louiswork
+import louiswork as louiswork
 
 from problog import get_evaluatable
 from problog.program import SimpleProgram
