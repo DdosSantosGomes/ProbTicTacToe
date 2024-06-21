@@ -40,36 +40,46 @@ query(win(4)).
 % 2 cells
 
 % %% possible turns
-% turn(x,0).
-% turn(o,1).
-% turn(x,2).
-% turn(o,3).
-% turn(x,4).
-% turn(o,5).
-% turn(x,6).
-% turn(o,7).
-% turn(x,8).
-% turn(o,9).
-% 
-% board(n,n,0).
-% 
-% 1/2::pos(1,1); 1/2::pos(2,1).
-% 
-% 1/2::pos(1,2); 1/2::pos(2,2).
-% 
-% 1/2::pos(1,3); 1/2::pos(2,3).
-% 
-% board(x,_,B) :- board(n,_,A), pos(1,B), turn(x,B), B is A+1.
-% board(_,x,B) :- board(_,n,A), pos(2,B), turn(x,B), B is A+1.
-% 
-% board(o,_,B) :- board(n,_,A), pos(1,B), turn(o,B), B is A+1.
-% board(_,o,B) :- board(_,n,A), pos(2,B), turn(o,B), B is A+1.
-% 
-% win(B) :- board(x,x,B).
-% lose(B) :- board(o,o,B).
-% 
-% 
+turn(o,1).
+turn(x,2).
+turn(o,3).
+turn(x,4).
+turn(o,5).
+turn(x,6).
+turn(o,7).
+turn(x,8).
+turn(o,9).
+
+board(n,n,0).
+
+1/2::pos(1,1); 1/2::pos(2,1).
+1/2::pos(1,2); 1/2::pos(2,2).
+1/2::pos(1,3); 1/2::pos(2,3).
+
+0.65::square1G(N); 0.05::square1B(N); 0.3::square1N(N).
+0.65::square2G(N); 0.05::square2B(N); 0.3::square2N(N).
+
+board(x,S,B) :- board(n,S,A), pos(1,B), turn(x,B), square1G(B), B is A+1.
+board(S,x,B) :- board(S,n,A), pos(2,B), turn(x,B), square1G(B) B is A+1.
+board(o,S,B) :- board(n,S,A), pos(1,B), turn(x,B), square1B(B), B is A+1.
+board(S,o,B) :- board(S,n,A), pos(2,B), turn(x,B), square1B(B) B is A+1.
+
+board(o,S,B) :- board(n,S,A), pos(1,B), turn(o,B), square1G(B), B is A+1.
+board(S,o,B) :- board(S,n,A), pos(2,B), turn(o,B), square1G(B), B is A+1.
+board(x,S,B) :- board(n,S,A), pos(1,B), turn(o,B), square1B(B), B is A+1.
+board(S,x,B) :- board(S,n,A), pos(2,B), turn(o,B), square1B(B), B is A+1.
+
+win(B) :- board(x,x,B).
+lose(B) :- board(o,o,B).
+
+x1_in_one :- board(x,_,1).
+x1_in_two :- board(x,_,2).
+
+x_1_in_two_not_one :- board(n,_,1), board(x,_,2).
+x_1_in_two_not_one :- board(o,_,1), board(x,_,2).
+
+
 % % queries
-% query(board(o,n,1)).
-% query(win(2)).
-% query(lose(2)).
+query(x1_in_one).
+query(x1_in_two).
+query(x_1_in_two_not_one).

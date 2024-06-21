@@ -1,5 +1,5 @@
-import louiswork
-import strategy_helper as sh
+import strategies.louiswork as louiswork
+import strategies.strategy_helper as sh
 
 # Example (init game): uniform dist of all tiles 
 # 1/9::pos(1,1); 1/9::pos(2,1); 1/9::pos(3,1); 1/9::pos(4,1); 1/9::pos(5,1); 
@@ -51,7 +51,7 @@ def string_for_aggressive(state, turn_nr, mode="WF"):
     if chosen_cells == []: 
         return sh.string_for_all_moves([*range(1,10)], turn_nr)
 
-    return sh.string_of_prob_dist(chosen_cells, turn_nr)
+    return sh.string_of_choice_dist(chosen_cells, turn_nr)
 
 
 # Input max turn number in which you want to win

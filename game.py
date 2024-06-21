@@ -1,7 +1,7 @@
 from grid import ProbTicTacToe
 from strategies.strategy import Strategy
 import random 
-import louiswork
+import strategies.louiswork as louiswork
 
 class Game:
 

@@ -1,4 +1,4 @@
-import louiswork
+import strategies.louiswork as louiswork
 import simulator
 import nano
 
