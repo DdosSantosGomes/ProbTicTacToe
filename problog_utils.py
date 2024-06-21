@@ -2,7 +2,7 @@ import re
 
 constant_regex = '[a-z]+|0|[1-9][0-9]*'
 var_regex = '[A-Z]+[0-9]*'
-term_regex = '[a-z]+_[a-z]+|[a-z]+'
+term_regex = '[a-z]+_[a-z]+|[a-z]+|[a-z]+[0-9]*'
 
 def variable(name):
     """
@@ -11,7 +11,8 @@ def variable(name):
     This does not return valid ProbLog code, it is to be used in combination with the other functions.
     """
     if re.fullmatch(var_regex, name) is None:
-        raise NameFormatException('Please only use uppercase letters, followed possibly by numbers, to specify a variable! {} is not it'.format(name))
+        raise NameFormatException('Please only use uppercase letters, followed possibly by numbers, to specify a variable! \
+                                  {} is not it'.format(name))
     return name
 
 def constant(name):
@@ -22,7 +23,8 @@ def constant(name):
     """
     name = str(name)
     if re.fullmatch(constant_regex, name) is None:
-        raise NameFormatException('Please only use lowercase letter to specify a name! {} contains non-lowercase letters'.format(name))
+        raise NameFormatException('Please only use lowercase letter to specify a name! \
+                                  {} contains non-lowercase letters'.format(name))
     return name
 
 def function(name, *args):
@@ -32,12 +34,14 @@ def function(name, *args):
     Note that each arg must be a variable or a constant or a number.
     """
     if re.fullmatch(term_regex, name) is None:
-        raise FunctionNameException('Function names should consist of only lowercase letters, possibly with one underscore! {} is not that'.format(name))
+        raise FunctionNameException('Function names should consist of only lowercase letters, possibly with one underscore or numbers following! \
+                                    {} is not that'.format(name))
     args = [ str(arg) for arg in args ]
     for arg in args:
         arg_regex = '{var}|{const}|_|0|[1-9][0-9]*'.format(var=var_regex, const=constant_regex)
         if re.fullmatch(arg_regex,arg) is None:
-            raise FunctionArgFormatException('Function arguments should be variables or constants or numbers! Which {} is not!'.format(arg))
+            raise FunctionArgFormatException('Function arguments should be variables or constants or numbers! \
+                                             Which {} is not!'.format(arg))
     return "{f}({xs})".format(f=name, xs=",".join(args))
 
 def fact(term):
@@ -53,25 +57,25 @@ def probabilistic_fact(prob, f):
     try:
         p = float(prob)
     except:
-        raise ProbabilityFormatException('Please enter the probability as a float! {} is not a float.'.format(prob))
+        raise ProbabilityFormatException('Please enter the probability as a float! \
+                                         {} is not a float.'.format(prob))
     if p < 0.0 or p > 1.0:
-        raise ProbabilityValueException('Please enter a valid probability value! {} is not valid.'.format(p))
+        raise ProbabilityValueException('Please enter a valid probability value! \
+                                        {} is not valid.'.format(p))
     return "{p} :: {f}".format(p=prob, f=fact(f)) 
 
 def term_conj(*terms):
     """
-    Returns conjunction of given terms (constant or function) as a string, which is not valid ProbLog.
-    To be used with clause or probabilistic_clause.
+    Returns conjunction of given terms (constant or function) as a string, which is not valid ProbLog. \n
+    To be used with clause or probabilistic_clause. Please use it with function or constant.
     """
-    # calling fact(t) is a workaround to check that the terms are syntactically valid without making case distinctions
     return ", ".join(terms) 
 
 def term_disj(*terms):
     """
-    Returns disjunction of given terms (constant or function) as a string, which is not valid ProbLog.
-    To be used with clause or probabilistic_clause.
+    Returns disjunction of given terms (constant or function) as a string, which is not valid ProbLog. \n
+    To be used with clause or probabilistic_clause. Please use it with function or constant.
     """
-    # calling fact(t) is a workaround to check that the terms are syntactically valid without making case distinctions
     return "; ".join(terms)
 
 def simple_constraint(var1, var2):

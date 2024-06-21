@@ -63,7 +63,9 @@ class ProbLogProgram:
             problog_program = PrologString(self.get_program())
             result = get_evaluatable().create_from(problog_program).evaluate()
         except:
-            raise ProbLogRuntimeException('The queries {} cannot be computed'.format(queries))
+            raise ProbLogRuntimeException('The queries {} cannot be computed'
+                                          .format(', '.join( [q[:-2] for q in queries] ))
+                                          )
         return result
     
     def update_board(self, new_board):
@@ -131,8 +133,7 @@ class ProbLogProgram:
                 body = term_conj(
                     prev_board, 
                     function(TURN, constant(X), variable(B)), 
-                    function(SQUARE_GOOD, constant(cell_no), variable(B)), 
-                    function(CHOOSE, constant(cell_no), variable(A))
+                    function(SQUARE_GOOD, constant(cell_no), variable(B))
                 ),
                 constraint = simple_constraint(variable(B), variable(A))
             )
@@ -141,8 +142,7 @@ class ProbLogProgram:
                 body = term_conj(
                     prev_board, 
                     function(TURN, constant(O), variable(B)), 
-                    function(SQUARE_GOOD, constant(cell_no), variable(B)), 
-                    function(CHOOSE, constant(cell_no), variable(A))
+                    function(SQUARE_GOOD, constant(cell_no), variable(B))
                 ),
                 constraint = simple_constraint(variable(B), variable(A))
             )
@@ -151,8 +151,7 @@ class ProbLogProgram:
                 body = term_conj(
                     prev_board, 
                     function(TURN, constant(O), variable(B)), 
-                    function(SQUARE_BAD, constant(cell_no), variable(B)), 
-                    function(CHOOSE, constant(cell_no), variable(A))
+                    function(SQUARE_BAD, constant(cell_no), variable(B))
                 ),
                 constraint = simple_constraint(variable(B), variable(A))
             )
@@ -161,8 +160,7 @@ class ProbLogProgram:
                 body = term_conj(
                     prev_board, 
                     function(TURN, constant(X), variable(B)), 
-                    function(SQUARE_BAD, constant(cell_no), variable(B)), 
-                    function(CHOOSE, constant(cell_no), variable(A))
+                    function(SQUARE_BAD, constant(cell_no), variable(B))
                 ),
                 constraint = simple_constraint(variable(B), variable(A))
             )
@@ -171,8 +169,7 @@ class ProbLogProgram:
                 body = term_conj(
                     prev_board, 
                     function(TURN, ANY, variable(B)), 
-                    function(SQUARE_NEUTRAL, constant(cell_no), variable(B)), 
-                    function(CHOOSE, constant(cell_no), variable(A))
+                    function(SQUARE_NEUTRAL, constant(cell_no), variable(B))
                 ),
                 constraint = simple_constraint(variable(B), variable(A))
             )
