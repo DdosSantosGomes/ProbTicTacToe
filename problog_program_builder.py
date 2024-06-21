@@ -52,12 +52,14 @@ class ProbLogProgram:
             program += self.__program['queries']
         return program
 
-    def query(self, queries, evidence = None):
+    def query(self, *queries, evidence = None):
         """
         Use in combination with utils.query and utils.evidence to generate syntactically valid ProbLog queries.
         """
+        self.__program['queries'] = ''
+        for query in queries:
+            self.__program['queries'] += query
         try:
-            self.__program['queries'] = queries
             if evidence is not None:
                 self.__program['evidence'] = evidence
             problog_program = PrologString(self.get_program())
