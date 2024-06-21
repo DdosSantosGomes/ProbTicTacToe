@@ -1,6 +1,7 @@
 import random
 from abc import ABC, abstractmethod
 from problog_program_builder import ProbLogProgram
+import strategy_helper as sh
 
 
 class Strategy(ABC):
@@ -21,5 +22,13 @@ class Strategy(ABC):
         return tuple(generate_square() for _ in range(9))
 
     @abstractmethod
-    def do(self, state):
+    def do(self, state, max_turns):
         pass
+
+    def choose_cells(self, state):
+        """
+        Selects a subset of the available cells; returns Problog 
+        distr. string (annotated disjunction).
+        """
+        cells = sh.cells_aggressive(state, 0, mode="WF")
+        return sh.string_of_choice_dist(cells, 0)

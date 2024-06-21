@@ -79,6 +79,7 @@ def cells_aggressive(state, turn_nr, mode="WF"):
 
     # Get cell numbers
     cells = [c + 1 for c in louiswork.available_cells(state)]
+
     print("cells: ", cells)
     chosen_cells = []
 
@@ -107,6 +108,7 @@ def cells_aggressive(state, turn_nr, mode="WF"):
 
     # If none of the cells meet the conditions, default to all possible moves
     if chosen_cells == []: 
+        print("is empty")
         return [*range(1,10)]
 
     return chosen_cells 
@@ -147,14 +149,13 @@ def win_condition(chosen_cell):
 nice_state = ("x", "o", "x", None, None, None, "x", None, None)
 nice_cell_nrs = [4,5,6,8,9]
 
-# print("probdist: ", sh.string_of_prob_dist(nice_cell_nrs,2))
-# print("probdist of all (should be same): ", sh.string_for_all_moves(nice_state,2))
-# print("next to 6: ", sh.adjacent_cells(6))
-# print("next to 5: ", sh.adjacent_cells(5))
-# print("illegal: ", sh.adjacent_cells(11))
-# print("winning fast: ", string_for_aggressive(nice_state, 3))
-# print("conquer-the-board: ", string_for_aggressive(nice_state, 3, mode="CB"))
-# print("evidence str: ",string_for_MPE(3))
+# print("probdist: ", string_of_choice_dist(nice_cell_nrs,2))
+# print("probdist of all (should be same): ", string_for_all_moves(nice_state,2))
+# print("next to 6: ", adjacent_cells(6))
+# print("next to 5: ", adjacent_cells(5))
+# print("illegal: ", adjacent_cells(11))
+print("winning fast: ", cells_aggressive(nice_state, 3))
+print("conquer-the-board: ", cells_aggressive(nice_state, 3, mode="CB"))
 
 
 
