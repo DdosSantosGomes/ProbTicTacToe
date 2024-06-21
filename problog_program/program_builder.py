@@ -19,16 +19,18 @@ class ProbLogProgram:
     It is a dictionary indexed by the sections of our ProbLog program.
     In particular, our indices are:
         - board (current state of the board)
-        - grid ()
-        - turns
-        - moves
-        - win
-        - lose 
+        - grid (fixed board)
+        - turns (who plays when)
+        - moves (legal move predicate)
+        - win (winning condition)
+        - lose (losing condition)
+        - choices (probability distribution of square choices)
         - (possibly) queries
         - (possibly) evidence \n
     and they correspond to the fixed game logic of the game of ProbTicTacToe.
     """
 
+    # only for testing
     def __generate_grid(self):
         def generate_square():
             neutral = random.choice(range(5, 35, 5))
@@ -72,6 +74,12 @@ class ProbLogProgram:
         except:
             raise ProbLogRuntimeException('The queries {} cannot be computed'.format(queries))
         return result
+    
+    def update_board(self, new_board):
+        self.__program['board'] = new_board
+
+    def update_choices(self, choices):
+        self.__program['choices'] = choices
     
     def __grid(self):
         self.__program['grid'] = ''
