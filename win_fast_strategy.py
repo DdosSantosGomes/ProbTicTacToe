@@ -1,6 +1,6 @@
 from strategy import Strategy
-from . import names
-from . import problog_utils
+import names
+import problog_utils
 import strategy_helper as sh
 
 
