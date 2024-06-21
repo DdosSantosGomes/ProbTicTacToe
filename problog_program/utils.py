@@ -1,17 +1,5 @@
 import re
 
-class NameFormatException(Exception):
-    pass
-
-class FunctionArgFormatException(Exception):
-    pass
-
-class ProbabilityFormatException(Exception):
-    pass
-
-class ProbabilityValueException(Exception):
-    pass
-
 constant_regex = '[a-z]+_[a-z]+|[a-z]+'
 var_regex = '[A-Z]+[0-9]*'
 
@@ -65,21 +53,21 @@ def probabilistic_fact(prob, f):
         raise ProbabilityValueException('Please enter a valid probability value! {} is not valid.'.format(p))
     return "{p} :: {f}".format(p=prob, f=fact(f)) 
 
-def conj(*terms):
+def term_conj(*terms):
     """
     Returns conjunction of given terms (constant or function) as a string, which is not valid ProbLog.
     To be used with clause or probabilistic_clause.
     """
     # calling fact(t) is a workaround to check that the terms are syntactically valid without making case distinctions
-    return ", ".join([ fact(t)[:len(t)] for t in terms ]) 
+    return ", ".join(terms) 
 
-def disj(*terms):
+def term_disj(*terms):
     """
     Returns disjunction of given terms (constant or function) as a string, which is not valid ProbLog.
     To be used with clause or probabilistic_clause.
     """
     # calling fact(t) is a workaround to check that the terms are syntactically valid without making case distinctions
-    return "; ".join([ fact(t)[:len(t)] for t in terms ])
+    return "; ".join(terms)
 
 def simple_constraint(var1, var2):
     """
@@ -92,7 +80,7 @@ def clause(head, body, constraint = ""):
     Returns a ProbLog clause. 
 
     Head: should be a term.
-    Body: term, or conjunction or disjunction of terms (use conj or disj).
+    Body: term, or conjunction or disjunction of terms (use term_conj or term_disj).
     Constraint: should be e.g. of the form 'B' is 'A+1'. Use simple_constraint for that
     """
     if constraint != "":
@@ -105,7 +93,7 @@ def probabilistic_clause(head, body, prob, constraint = ""):
     Returns a ProbLog probabilistic clause. 
 
     Head: should be a term.
-    Body: term, or conjunction or disjunction of terms (use conj or disj).
+    Body: term, or conjunction or disjunction of terms (use term_conj or term_disj).
     Constraint: should be e.g. of the form 'B' is 'A+1'. Use simple_constraint for that
     """
     if constraint != "":
@@ -139,7 +127,7 @@ def query(*qs):
     """
     out = ''
     for q in qs:
-        out += 'query({}).\n'.format(fact(q)[:len(q)])
+        out += 'query({}).\n'.format(q)
     return out
 
 def evidence(*es):
@@ -150,8 +138,20 @@ def evidence(*es):
     """
     out = ''
     for e in es:
-        out += 'evidence({}).\n'.format(fact(e)[:len(e)])
+        out += 'evidence({}).\n'.format(e)
     return out
+
+class NameFormatException(Exception):
+    pass
+
+class FunctionArgFormatException(Exception):
+    pass
+
+class ProbabilityFormatException(Exception):
+    pass
+
+class ProbabilityValueException(Exception):
+    pass
 
 if __name__ == "__main__":
     reg1 = '[1-9][0-9]*'
