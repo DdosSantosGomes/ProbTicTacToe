@@ -1,7 +1,8 @@
 import re
 
-constant_regex = '[a-z]+_[a-z]+|[a-z]+'
+constant_regex = '[a-z]+|0|[1-9][0-9]*'
 var_regex = '[A-Z]+[0-9]*'
+term_regex = '[a-z]+_[a-z]+|[a-z]+'
 
 def variable(name):
     """
@@ -15,12 +16,13 @@ def variable(name):
 
 def constant(name):
     """
-    Returns a constant represented as a string - note that only strings of lowercase letters, at most with an underscore, are accepted for simplicity.
+    Returns a constant represented as a string - note that only strings of lowercase letters and numbers are accepted for simplicity.
     
     This does not return valid ProbLog code, it is to be used in combination with the other functions.
     """
+    name = str(name)
     if re.fullmatch(constant_regex, name) is None:
-        raise NameFormatException('Please only use lowercase letters (possibly with an underscore) to specify a name! {} contains non-lowercase letters'.format(name))
+        raise NameFormatException('Please only use lowercase letter to specify a name! {} contains non-lowercase letters'.format(name))
     return name
 
 def function(name, *args):
@@ -29,11 +31,14 @@ def function(name, *args):
 
     Note that each arg must be a variable or a constant or a number.
     """
+    if re.fullmatch(term_regex, name) is None:
+        raise FunctionNameException('Function names should consist of only lowercase letters, possibly with one underscore! {} is not that'.format(name))
     args = [ str(arg) for arg in args ]
     for arg in args:
-        if re.fullmatch(var_regex,arg) is None and re.fullmatch('[0-9]+',arg) is None and re.fullmatch(constant_regex, arg) is None and arg != '_':
+        arg_regex = '{var}|{const}|_|0|[1-9][0-9]*'.format(var=var_regex, const=constant_regex)
+        if re.fullmatch(arg_regex,arg) is None:
             raise FunctionArgFormatException('Function arguments should be variables or constants or numbers! Which {} is not!'.format(arg))
-    return "{f}({xs})".format(f=constant(name), xs=",".join(args))
+    return "{f}({xs})".format(f=name, xs=",".join(args))
 
 def fact(term):
     """
@@ -142,6 +147,9 @@ def evidence(*es):
     return out
 
 class NameFormatException(Exception):
+    pass
+
+class FunctionNameException(Exception):
     pass
 
 class FunctionArgFormatException(Exception):
