@@ -1,6 +1,6 @@
-import louiswork
-import simulator
-import nano
+import louiswork as louiswork
+import trash.simulator as simulator
+import trash.nano as nano
 
 def win_strategy(grid, state):
     probabilities = 0
