@@ -57,7 +57,7 @@ def adjacent_cells(cell_nr):
         return adj_cells
     
 
-def cells_aggressive(state, turn_nr, mode='WF'): 
+def cells_aggressive(state, mode='WF'): 
     """
     Two aggressive strategies: try winning as fast as possible (by favouring tiles
     surrounded by other x's), or try 'conquering the board' (by spreading out your
