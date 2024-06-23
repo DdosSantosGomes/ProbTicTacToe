@@ -3,76 +3,35 @@ from strategies_defensive import *
 from names import *
 from problog_utils import *
 
+import louiswork
 
-class WinFast(Strategy):
 
-    def choose_cells(self, state):
-        """
-        Selects a preferred subset of the available cells (WF mode).
-        """
-        return self.cells_aggressive(state, 1, mode="WF")
+class AggressiveStrategy(Strategy):
+    # note that this class is still abstract
+    # as it does not define _choose_candidate_cells_to_test
     
-    def run(self, state, max_turns=3):
-        """
-        Runs the Problog program with the given state using each of the cells 
-        from the preferred list as evidence; chooses the cell maximizing the 
-        probability of winning according to the winning conditions. 
-        """
+    def _end_conditions(self, state, cells, player):
+        return self._win_condions_for_chosen_cells(state, cells, player)
 
-        self.problog_program.update_board(self.__board)
-        
-        cells = self.choose_cells(state)
-        play_options = self.choice_dist(cells, 1)
-        self.problog_program.update_play(play_options)
-        
-        w_clauses = self.win_conds(state, cells, max_turns, player='x') 
-        win_term = function(WIN, constant(max_turns))
-        self.problog_program.update_win_conditions(*w_clauses)
+    def _condition_term(self):
+        return function(WIN, constant(self.max_turns))
 
-        q = query(win_term)
-        probs = {}
-
-        for i in range(len(cells)): 
-            ev = function(PLAY, cells[i], 1)
-            probs[cells[i]] = self.problog_program.query(q, evidence=ev)[win_term]
-
+    def _choose_cell(self, probs):
         return max(probs, key=probs.get)
 
 
-class ConquerBoardAggressive(Strategy):
+class WinFast(AggressiveStrategy):
 
-    def choose_cells(self, state):
-        """
-        Selects a preferred subset of the available cells (CB mode).
-        """
-        return self.cells_aggressive(state, 1, mode="CB")
+    def _choose_candidate_cells_to_test(self, state):
+        return self._cells_aggressive(state, mode="WF")
+
+
+class ConquerBoardAggressive(AggressiveStrategy):
+
+    def _choose_candidate_cells_to_test(self, state):
+        return self._cells_aggressive(state, mode="CB")
     
-    def run(self, state, max_turns=3):
-        """
-        Runs the Problog program with the given state using each of the cells 
-        from the preferred list as evidence; chooses the cell maximizing the 
-        probability of winning according to the winning conditions. 
-        """
-
-        self.problog_program.update_board(self.__board)
-        
-        cells = self.choose_cells(state)
-        play_options = self.choice_dist(cells, 1)
-        self.problog_program.update_play(play_options)
-        
-        w_clauses = self.win_conds(state, cells, max_turns, player='x') 
-        win_term = function(WIN, constant(max_turns))
-        self.problog_program.update_win_conditions(*w_clauses)
-
-        q = query(win_term)
-        probs = {}
-
-        for i in range(len(cells)): 
-            ev = function(PLAY, cells[i], 1)
-            probs[cells[i]] = self.problog_program.query(q, evidence=ev)[win_term]
-
-        return max(probs, key=probs.get)
     
 if __name__ == "__main__":
-    strategy = WinFast(None) 
-    print(strategy.run(("x", "o", "x", None, None, None, "x", None, None), 2))
+    strategy = WinFast(louiswork.generate_grid()) 
+    print(strategy.run(("x", "o", "x", None, None, None, "x", None, None)))

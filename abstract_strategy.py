@@ -1,131 +1,155 @@
-import random
-import louiswork
+from math import sqrt
 from abc import ABC, abstractmethod
+
+import louiswork
 from problog_program_builder import ProbLogProgram
 from problog_utils import *
 from names import *
 
 
 class Strategy(ABC):
+    """
+    Base abstract Strategy class - in a nutshell, a wrapper for the run function,
+    which calculates the optimal move according to a strategy, from a given state,
+    with a default lookahead of 3 turns.
+    """
 
     initial_state = (None,) * 9
     
-    def __init__(self, grid):
-        self.grid = self.__generate_grid() if grid is None else grid
-        self.problog_program = ProbLogProgram(grid)
+    def __init__(self, grid, max_turns = 3):
+        self.grid = grid
+        self.max_turns = max_turns
+        self.problog_program = ProbLogProgram(grid, max_turns)
 
+    def run(self, state):
+        """ Calculates the optimal move according to a strategy from a given state. """
+        ### pipeline: update ProbLog program -> query it -> find optimal cell
+        # first: update the state of the board in ProbLog
+        self.problog_program.update_board(self._board(state)) 
+        # second: tell ProbLog which cells are available to play in
+        candidate_cells = self._choose_candidate_cells_to_test(state)
+        play_options = ''
+        for i in range(1, self.max_turns + 1):
+            play_options += self._choice_dist(candidate_cells, i)
+        self.problog_program.update_play(play_options)
+        # third: specify end conditions to ProbLog
+        end_condition_clauses = self._end_conditions(state, candidate_cells, player=X) 
+        end_condition_term = self._condition_term()
+        self.problog_program.update_end_conditions(*end_condition_clauses)
+        end_condition_query = query(end_condition_term)
+        probs = {} # dict of key = cell and value = probability of reaching the desired end condition
+        ### next: query the ProbLog program with evidence of playing the candidate cells
+        for cell in candidate_cells: 
+            ev = evidence(function(PLAY, constant(cell), constant(1)))
 
-    # only for testing
-    def __generate_grid(self):
-        def generate_square():
-            neutral = random.choice(range(5, 35, 5))
-            success = random.choice(range(30, 100 - neutral + 5, 5))
-            failure = 100 - neutral - success
-            return success / 100, neutral / 100, failure / 100
-        return tuple(generate_square() for _ in range(9))
+            print('state:', state)
+            print('cells to choose from:', candidate_cells)
+            print('key:', end_condition_term + str(type(end_condition_term)))
+
+            prob = self.problog_program.query(end_condition_query, evidence=ev)
+
+            print('result:', prob)
+
+            probs[cell] = prob
+        ### last: find the optimal cell to play, and send it back to the Game simulator
+        return self._choose_cell(probs)
     
+    @abstractmethod
+    def _choose_candidate_cells_to_test(self, state):
+        """ Select a subset of candidate cells to test. """
+        pass
 
-    def choice_dist(self, av_cell_nrs, turn_nr):
-        """
-        Returns Problog-style string of the uniform probability distribution over 
-        a given list of cell numbers, given the current turn. 
-        """
+    @abstractmethod
+    def _end_conditions(self, state, cells, player):
+        pass
+
+    @abstractmethod
+    def _condition_term(self):
+        pass
+
+    @abstractmethod
+    def _choose_cell(self, probs):
+        """ Choose a cell to play, according to our strategy. """
+        pass
+
+    def _choice_dist(self, av_cell_nrs, turn_nr):
+        """ Returns a ProbLog annotated disjunction with body, consisting of the
+        uniform probability distribution over a given list of cell numbers, given the current turn. 
+        This encodes the possible choices we are allowed to make in ProbLog. """
         total = len(av_cell_nrs)
         probs = []
         for c in av_cell_nrs:
-            probs.append(probabilistic_fact(1/total, function(PLAY, c, turn_nr)))
-        return annotated_disjunction(*probs)
+            probs.append(
+                probabilistic_fact(
+                    prob = 1/total, 
+                    f = function(PLAY, constant(c), constant(turn_nr))))
+        return annotated_disjunction_with_body(
+            annotated_disj = annotated_disjunction(*probs),
+            body = function(TURN, ANY, variable(A))
+        )
     
-
-    def adjacent_cells(self, cell_nr):
-        """
-        Returns the cell numbers surrounding a given cell number 
-        (including diagonals), on a 3x3 grid . 
-        """
+    def _adjacent_cells(self, cell_nr):
+        """ Returns the cell numbers surrounding a given cell number (including diagonals), on a 3x3 grid. """
         if not (cell_nr in range(1,10)):
-            return "Off the grid!"
-        
+            raise IndexOutOfBoundsException('Off the grid! {} should be an int between 1-9'.format(cell_nr))
         coord_dict = {
-            "1" : (1,1),
-            "2" : (2,1),
-            "3" : (3,1),
-            "4" : (1,2),
-            "5" : (2,2), 
-            "6" : (3,2),
-            "7" : (1,3),
-            "8" : (2,3),
-            "9" : (3,3)
+            "1" : (1,1), "2" : (2,1), "3" : (3,1),
+            "4" : (1,2), "5" : (2,2), "6" : (3,2),
+            "7" : (1,3), "8" : (2,3), "9" : (3,3)
         } 
-        
         (i,j) = coord_dict[str(cell_nr)]
-
-        # 5 is middle cell: all cells are adjacent
-        if cell_nr == 5:
+        if cell_nr == 5: # 5 is middle cell: all cells are adjacent
             return [1,2,3,4,6,7,8,9]
-        
         else:
             adj_coords = [(i-1,j), (i,j-1), (i+1,j), (i,j+1),
                             (i-1,j-1), (i-1,j+1), (i+1,j-1), (i+1,j+1)]
-            adj_cells = [int(i) for i,c in coord_dict.items() if c in adj_coords]
+            adj_cells = [ int(i) for i,c in coord_dict.items() if c in adj_coords ]
             return adj_cells
         
-    def cells_aggressive(self, state, mode='WF'): 
-        """
-        Two aggressive strategies: try winning as fast as possible (by favouring tiles
+    def _cells_aggressive(self, state, mode='WF'): 
+        """ Two aggressive strategies: try winning as fast as possible (by favouring tiles
         surrounded by other x's), or try 'conquering the board' (by spreading out your
         choices over the board). Returns a set of chosen cell numbers.
 
         For Winning Fast mode choose mode="WF" (default); 
-        for Conquer-the-Board mode choose mode="CB". 
-        """
-
-        # If grid is empty, select all possible moves
-        if state == (None,) * 9: 
-            return [*range(1,10)]
-
-        # Get cell numbers
-        cells = [c + 1 for c in louiswork.available_cells(state)]
+        for Conquer-the-Board mode choose mode="CB". """
+        if state == (None,) * 9: # If grid is empty, select all possible moves
+            return list(range(1,10))
+        cells = [ c + 1 for c in louiswork.available_cells(state) ]
         chosen_cells = []
-
         for cell in cells:
-
-            # Collect adjacent cells containing an "x"
-            adj_cells = [c for c in self.adjacent_cells(cell) if state[c-1] == 'x']
-
-            # Winning Fast: maximize number of adjacent cells containing an "x"
-            if mode == 'WF': 
+            adj_cells = [ c for c in self._adjacent_cells(cell) if state[c-1] == X ]
+            if mode == 'WF': # maximize number of adjacent cells containing an x
                 if len(adj_cells) > 1: 
                     chosen_cells.append(cell)
-
-            # Conquer-the-Board: minimize number of adjacent cells containing an "x" 
-            elif mode == 'CB':
+            elif mode == 'CB': # minimize number of adjacent cells containing an "x" 
                 if len(adj_cells) <= 1:
                     chosen_cells.append(cell)
-                
-            # Wrong mode
             else: 
                 return None
-
-        # If none of the cells meet the conditions, default to all possible moves
-        if chosen_cells == []: 
+        if chosen_cells == []: # If none of the cells meet the conditions, default to all possible moves
             return [*range(1,10)]
-
         return chosen_cells 
-
-
-    @abstractmethod
-    def choose_cells(self, state):
-        pass
-
-    def win_condition(self, state, chosen_cell, player='x'): 
-        """
-        Returns a set of winning predicates that are reachable from the 
+    
+    def _win_condions_for_chosen_cells(self, state, chosen_cells, player='x'):
+        """ Returns a list of ProbLog clauses, stating winning conditions for each chosen cell. """
+        win_preds_per_cell = [ self._win_condition_for_cell(state, c, player) for c in chosen_cells ]
+        clauses = []
+        for win_preds_of_c in win_preds_per_cell: 
+            cl = clause(
+                head = function(WIN, constant(self.max_turns)),
+                body = term_disj(
+                    *[ function(win_pred, constant(self.max_turns)) for win_pred in win_preds_of_c ]
+                    )
+            )
+            clauses.append(cl)
+        return clauses
+    
+    def _win_condition_for_cell(self, state, chosen_cell, player='x'): 
+        """ Returns a set of winning predicates that are reachable from the 
         current state, for this player, and for which the chosen cell contributes 
-        to the winning configuration. Default: player is 'x'. Assumes 'o' is opponent.
-        """
-
-        # Indices of player's marks in winning states
-        win_states = {
+        to the winning configuration. Default: player is 'x'. Assumes 'o' is opponent. """
+        win_states = { # Indices of player's marks in winning states
             "1" : ([1,2,3], WIN1, LOSE1),
             "2" : ([4,5,6], WIN2, LOSE2),
             "3" : ([7,8,9], WIN3, LOSE3),
@@ -135,64 +159,42 @@ class Strategy(ABC):
             "7" : ([1,5,9], WIN7, LOSE7),
             "8" : ([3,5,7], WIN8, LOSE8),
         }
-
         possible_wins = []
         impossible = False
-
         for w in win_states:
             winning_indices = win_states[w][0]
             if chosen_cell in winning_indices: 
                 impossible = False
-
-                # Don't count winning condition if it is unreachable
-                if player == 'x':
+                if player == X: # Don't count winning condition if it is unreachable
                     for i in winning_indices: 
-                        if state[i-1] == 'o':
+                        if state[i-1] == O:
                             impossible = True
                             break
-
                 else: 
                     for i in winning_indices: 
-                        if state[i-1] == 'x':
+                        if state[i-1] == X:
                             impossible = True
                             break
-                    
-                if impossible == False: 
-                    if player == 'x':
+                if not impossible: 
+                    if player == X:
                         possible_wins.append(win_states[w][1]) 
                     else:
                         possible_wins.append(win_states[w][2]) 
-
         return possible_wins
-    
 
-    def win_conds(self, state, chosen_cells, max_turns, player='x'):
-        """
-        Returns a list of Problog clauses stating winning conditions for each chosen cell.
-        """
-        win_preds_per_cell = [self.win_condition(state, c, player) for c in chosen_cells]
-        clauses = []
-        for win_preds_of_c in win_preds_per_cell: 
-            cl = clause(
-                head = function(WIN, constant(max_turns)),
-                body = term_disj(
-                    *[ function(win_pred, constant(max_turns)) for win_pred in win_preds_of_c ]
-                    )
-            )
-            clauses.append(cl)
-        return clauses
-    
-    
-    def __board(self, state):
-        for s in range(len(state)):
+    def _board(self, state):
+        """ Returns a ProbLog fact encoding the current state of the board. """
+        new_state = []
+        for s in state:
             if s == None: 
-                state[s] = constant('n')
+                new_state.append(constant(N))
             else: 
-                state[s] = constant(s)
-        return function(BOARD, state)
-
-
-    def run(self, state, max_turns=3):
-        pass
+                new_state.append(constant(s))
+        return fact(function(BOARD, *(new_state + [0])))
     
-    
+
+class IndexOutOfBoundsException(Exception):
+    pass
+
+class UnsupportedStrategyException(Exception):
+    pass

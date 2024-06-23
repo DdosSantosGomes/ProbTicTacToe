@@ -3,73 +3,28 @@ from names import *
 from problog_utils import *
 
 
-class TieFast(Strategy):
+class DefensiveStrategy(Strategy):
+    # note that this class is still abstract
+    # as it does not define _choose_candidate_cells_to_test
 
-    def choose_cells(self, state):
-        """
-        Selects a preferred subset of the available cells (WF mode).
-        """
-        return self.cells_aggressive(state, 1, mode="WF")
-    
-    def run(self, state, max_turns=3):
-        """
-        Runs the Problog program with the given state using each of the cells 
-        from the preferred list as evidence; chooses the cell minimizing the 
-        probability of losing according to the losing conditions. 
-        """
+    def _end_conditions(self, state, cells, player):
+        return self._win_condions_for_chosen_cells(state, cells, player)
 
-        self.problog_program.update_board(self.__board)
-        
-        cells = self.choose_cells(state)
-        play_options = self.choice_dist(cells, 1)
-        self.problog_program.update_play(play_options)
-        
-        l_clauses = self.win_conds(state, cells, max_turns, player='o') 
-        lose_term = function(LOSE, constant(max_turns))
-        self.problog_program.update_lose_conditions(*l_clauses)
+    def _condition_term(self):
+        return function(LOSE, constant(self.max_turns))
 
-        q = query(lose_term)
-        probs = {}
-
-        for i in range(len(cells)): 
-            ev = function(PLAY, cells[i], 1)
-            probs[cells[i]] = self.problog_program.query(q, evidence=ev)[lose_term]
-
+    def _choose_cell(self, probs):
         return min(probs, key=probs.get)
+
+
+class TieFast(DefensiveStrategy):
+
+    def _choose_candidate_cells_to_test(self, state):
+        return self._cells_aggressive(state, mode="WF")
     
 
-class ConquerBoardDefensive(Strategy):
+class ConquerBoardDefensive(DefensiveStrategy):
 
-    def choose_cells(self, state):
-        """
-        Selects a preferred subset of the available cells (CB mode).
-        """
-        return self.cells_aggressive(state, 1, mode="CB")
-    
-    def run(self, state, max_turns=3):
-        """
-        Runs the Problog program with the given state using each of the cells 
-        from the preferred list as evidence; chooses the cell minimizing the 
-        probability of losing according to the losing conditions. 
-        """
-
-        self.problog_program.update_board(self.__board)
-        
-        cells = self.choose_cells(state)
-        play_options = self.choice_dist(cells, 1)
-        self.problog_program.update_play(play_options)
-        
-        l_clauses = self.win_conds(state, cells, max_turns, player='o') 
-        lose_term = function(LOSE, constant(max_turns))
-        self.problog_program.update_lose_conditions(*l_clauses)
-
-        q = query(lose_term)
-        probs = {}
-
-        for i in range(len(cells)): 
-            ev = function(PLAY, cells[i], 1)
-            probs[cells[i]] = self.problog_program.query(q, evidence=ev)[lose_term]
-
-        return min(probs, key=probs.get)
-    
+    def _choose_candidate_cells_to_test(self, state):
+        return self._cells_aggressive(state, mode="CB")
     
