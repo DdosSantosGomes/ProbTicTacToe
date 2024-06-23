@@ -2,7 +2,6 @@ from abstract_strategy import Strategy
 from strategies_defensive import *
 from names import *
 from problog_utils import *
-import strategy_helper as sh
 
 
 class WinFast(Strategy):
@@ -11,7 +10,7 @@ class WinFast(Strategy):
         """
         Selects a preferred subset of the available cells (WF mode).
         """
-        return sh.cells_aggressive(state, 1, mode="WF")
+        return self.cells_aggressive(state, 1, mode="WF")
     
     def run(self, state, max_turns=3):
         """
@@ -23,7 +22,7 @@ class WinFast(Strategy):
         self.problog_program.update_board(self.__board)
         
         cells = self.choose_cells(state)
-        play_options = sh.choice_dist(cells, 1)
+        play_options = self.choice_dist(cells, 1)
         self.problog_program.update_play(play_options)
         
         w_clauses = self.win_conds(state, cells, max_turns, player='x') 
@@ -46,7 +45,7 @@ class ConquerBoardAggressive(Strategy):
         """
         Selects a preferred subset of the available cells (CB mode).
         """
-        return sh.cells_aggressive(state, 1, mode="CB")
+        return self.cells_aggressive(state, 1, mode="CB")
     
     def run(self, state, max_turns=3):
         """
@@ -58,7 +57,7 @@ class ConquerBoardAggressive(Strategy):
         self.problog_program.update_board(self.__board)
         
         cells = self.choose_cells(state)
-        play_options = sh.choice_dist(cells, 1)
+        play_options = self.choice_dist(cells, 1)
         self.problog_program.update_play(play_options)
         
         w_clauses = self.win_conds(state, cells, max_turns, player='x') 
