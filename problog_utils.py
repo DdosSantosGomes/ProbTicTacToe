@@ -1,3 +1,18 @@
+"""
+This is basically a (worse) re-implementation of the Python ProbLog library from KU Leuven.
+We were unhappy with some of their choices, so we just implemented the functions we needed for the purposes of this project.
+
+These functions are used to create ProbLog statements to build ProbLog programs.
+"""
+
+
+"""
+Note, however, that everything is represented as strings.
+All the functions do is check that the expressions are syntactically well-formed,
+so there is no actual type checking, and the functions should be used following the instructions,
+to avoid ProbLog runtime errors later on.
+"""
+
 import re
 
 constant_regex = '[a-z]+|0|[1-9][0-9]*'
