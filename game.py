@@ -1,31 +1,36 @@
 from grid import ProbTicTacToe
 from strategy import Strategy
+from win_fast_strategy import WinFastStrategy
 import random 
 import louiswork as louiswork
 
 class Game:
 
-    def __init__(self, grid_size = 3):
-        self.instance = ProbTicTacToe(grid_size)
+    def __init__(self):
+        pass
 
-    def play_game(self, move, state, strategy : Strategy):
-        grid = self.instance.grid
+    def play_game(self, move, state, strategy):
+        grid = louiswork.generate_grid()
+        s = strategy(grid)
+        # if strategy == 'WF':
+        #     s = WinFastStrategy(grid)
+        # else:
+        #     raise Exception()
         if move == "e":
             move = random.choice(("x","o"))
         while louiswork.winner(state) == None:
             if move == "x":
-                (_, cell), (_, _) = louiswork.value(grid, state) # input the strategy we use here
-                state = self.__make_move("x","o",state,cell)
-                move == "o"
+                cell = s.run(state,3) # input the strategy we use here
+                state = self.__make_move("x","o",state,cell,grid)
+                move = "o"
             elif move == "o":
                 (_, _), (_, cell) = louiswork.value(grid, state)
-                state = self.__make_move("o","x",state,cell)
-                move == "x"
+                state = self.__make_move("o","x",state,cell,grid)
+                move = "x"
         else:
             return louiswork.winner(state)
     
-    def __make_move(self,player,opponent,state,cell):
-        grid = self.instance.grid
+    def __make_move(self,player,opponent,state,cell,grid):
         success, neutral, failure = grid[cell]
         choice = random.choice(range(1,100))/100
         if choice <= success:
@@ -51,3 +56,7 @@ class Game:
             else:
                 print("error")
         return gameswonx, gameswono, gamestied
+    
+if __name__ == "__main__":
+    game = Game()
+    game.simulate('x',WinFastStrategy)
