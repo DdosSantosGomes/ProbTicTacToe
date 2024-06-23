@@ -10,7 +10,9 @@ from names import *
 
 class ProbLogProgram:
     """
-    Objects of this class are ProbLog programs that model a state of the game of ProbTicTacToe.
+    Objects of this class are ProbLog programs that model a state of the game of ProbTicTacToe.\n
+    They support queries about the probability of winning or losing from the given state, 
+    if certains moves are made and that can also be updated with evidence, with a lookahead of three turns.
     """
 
     _program = {}
@@ -39,7 +41,7 @@ class ProbLogProgram:
         self._win_condition()
         self._lose_condition()
 
-    def get_program(self):
+    def _get_program(self):
         program = ''
         for index,prog in self._program.items():
             if index == 'queries' or index == 'evidence':
@@ -62,7 +64,7 @@ class ProbLogProgram:
         try:
             if evidence is not None:
                 self._program['evidence'] = evidence
-            problog_program = PrologString(self.get_program())
+            problog_program = PrologString(self._get_program())
             result = get_evaluatable().create_from(problog_program).evaluate()
         except:
             raise ProbLogRuntimeException('The queries {} cannot be computed'
@@ -257,4 +259,4 @@ class ProbLogRuntimeException(Exception):
 
 if __name__ == "__main__": 
     game = ProbLogProgram(None)
-    print(game.get_program())
+    print(game._get_program())
