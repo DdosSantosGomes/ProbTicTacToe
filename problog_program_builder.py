@@ -91,17 +91,17 @@ class ProbLogProgram:
         for cell_no in range(len(self.grid)):
             current_cell = self.grid[cell_no]
             p_good, p_neutral, p_bad = current_cell[0], current_cell[1], current_cell[2]
-            a1 = probabilistic_fact(p_good, 
-                                    function(SQUARE_GOOD, constant(cell_no+1), variable(A))
+            good = probabilistic_fact(p_good, 
+                                    function(CELL, constant(cell_no+1), GOOD, variable(A))
                                     )
-            a2 = probabilistic_fact(p_neutral, 
-                                    function(SQUARE_NEUTRAL, constant(cell_no+1), variable(A))
+            neutral = probabilistic_fact(p_neutral, 
+                                    function(CELL, constant(cell_no+1), NEUTRAL, variable(A))
                                     )
-            a3 = probabilistic_fact(p_bad, 
-                                    function(SQUARE_BAD, constant(cell_no+1), variable(A))
+            bad = probabilistic_fact(p_bad, 
+                                    function(CELL, constant(cell_no+1), BAD, variable(A))
                                     )
             self._program['grid'] += annotated_disjunction_with_body( 
-                annotated_disj = annotated_disjunction(a1, a2, a3),
+                annotated_disj = annotated_disjunction(good, neutral, bad),
                 body = function(TURN, ANY, variable(A))
             )
 
@@ -145,7 +145,7 @@ class ProbLogProgram:
                 body = term_conj(
                     prev_board, 
                     function(TURN, constant(X), variable(B)), 
-                    function(SQUARE_GOOD, constant(cell_no), variable(B))
+                    function(CELL, constant(cell_no), GOOD, variable(B))
                 ),
                 constraint = simple_constraint(variable(B), variable(A))
             )
@@ -154,7 +154,7 @@ class ProbLogProgram:
                 body = term_conj(
                     prev_board, 
                     function(TURN, constant(O), variable(B)), 
-                    function(SQUARE_GOOD, constant(cell_no), variable(B))
+                    function(CELL, constant(cell_no), GOOD, variable(B))
                 ),
                 constraint = simple_constraint(variable(B), variable(A))
             )
@@ -163,7 +163,7 @@ class ProbLogProgram:
                 body = term_conj(
                     prev_board, 
                     function(TURN, constant(O), variable(B)), 
-                    function(SQUARE_BAD, constant(cell_no), variable(B))
+                    function(CELL, constant(cell_no), BAD, variable(B))
                 ),
                 constraint = simple_constraint(variable(B), variable(A))
             )
@@ -172,7 +172,7 @@ class ProbLogProgram:
                 body = term_conj(
                     prev_board, 
                     function(TURN, constant(X), variable(B)), 
-                    function(SQUARE_BAD, constant(cell_no), variable(B))
+                    function(CELL, constant(cell_no), BAD, variable(B))
                 ),
                 constraint = simple_constraint(variable(B), variable(A))
             )
@@ -181,7 +181,7 @@ class ProbLogProgram:
                 body = term_conj(
                     prev_board, 
                     function(TURN, ANY, variable(B)), 
-                    function(SQUARE_NEUTRAL, constant(cell_no), variable(B))
+                    function(CELL, constant(cell_no), NEUTRAL, variable(B))
                 ),
                 constraint = simple_constraint(variable(B), variable(A))
             )

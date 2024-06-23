@@ -3,9 +3,10 @@ This file contains all the names used in ProbLog.\n
 Define them here and use the respective constants for consistency.
 """
 
-SQUARE_GOOD = 'square_good'
-SQUARE_NEUTRAL = 'square_neutral'
-SQUARE_BAD = 'square_bad'
+CELL = 'cell'
+GOOD = 'good'
+NEUTRAL = 'neutral'
+BAD = 'bad'
 TURN = 'turn'
 BOARD = 'board'
 PLAY = 'play'
