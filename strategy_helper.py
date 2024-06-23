@@ -1,27 +1,27 @@
 import louiswork 
 import names
+from problog_utils import *
+from names import *
 
-def string_of_choice_dist(av_cell_nrs, turn_nr):
+def choice_dist(av_cell_nrs, turn_nr):
     """
     Returns Problog-style string of the uniform probability distribution over 
     a given list of cell numbers, given the current turn. 
     """
     total = len(av_cell_nrs)
-    probs = ""
-    for i in range(total):
-        probs += "1/{}::pos({},{})".format(total,av_cell_nrs[i],turn_nr)
-        if i < total - 1: 
-            probs += "; "
-    return probs + ".\n"
+    probs = []
+    for c in av_cell_nrs:
+        probs.append(probabilistic_fact(1/total, function(PLAY, c, turn_nr)))
+    return annotated_disjunction(*probs)
 
 
-def string_for_all_moves(state, turn_nr):
+def choice_dist_all_moves(state, turn_nr):
     """
     Returns Problog-style string of the uniform probability distribution 
     over all available cells given the current state and turn. 
     """
     cells = [c + 1 for c in louiswork.available_cells(state)]
-    return string_of_choice_dist(cells, turn_nr)
+    return choice_dist(cells, turn_nr)
 
 
 def adjacent_cells(cell_nr):
@@ -69,20 +69,16 @@ def cells_aggressive(state, turn_nr, mode="WF"):
 
     # If grid is empty, select all possible moves
     if state == (None,) * 9: 
-        return string_for_all_moves([*range(1,10)], turn_nr)
+        return [*range(1,10)]
 
     # Get cell numbers
     cells = [c + 1 for c in louiswork.available_cells(state)]
-
-    print("cells: ", cells)
     chosen_cells = []
 
-    
     for cell in cells:
 
         # Collect adjacent cells containing an "x"
         adj_cells = [c for c in adjacent_cells(cell) if state[c-1] == "x"]
-        print("next to {}:".format(str(cell)), adj_cells)
 
         # Winning Fast: maximize number of adjacent cells containing an "x"
         if mode == "WF": 
@@ -97,12 +93,9 @@ def cells_aggressive(state, turn_nr, mode="WF"):
         # Wrong mode
         else: 
             return None
-        
-    print("chosen: ", chosen_cells)
 
     # If none of the cells meet the conditions, default to all possible moves
     if chosen_cells == []: 
-        print("is empty")
         return [*range(1,10)]
 
     return chosen_cells 
@@ -157,7 +150,7 @@ nice_cell_nrs = [4,5,6,8,9]
 # print("illegal: ", adjacent_cells(11))
 # print("winning fast: ", cells_aggressive(nice_state, 3))
 # print("conquer-the-board: ", cells_aggressive(nice_state, 3, mode="CB"))
-print(win_condition(nice_state,5))
+print(choice_dist(nice_cell_nrs,1))
 
 
 
