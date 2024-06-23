@@ -57,7 +57,7 @@ def adjacent_cells(cell_nr):
         return adj_cells
     
 
-def cells_aggressive(state, turn_nr, mode="WF"): 
+def cells_aggressive(state, turn_nr, mode='WF'): 
     """
     Two aggressive strategies: try winning as fast as possible (by favouring tiles
     surrounded by other x's), or try 'conquering the board' (by spreading out your
@@ -78,15 +78,15 @@ def cells_aggressive(state, turn_nr, mode="WF"):
     for cell in cells:
 
         # Collect adjacent cells containing an "x"
-        adj_cells = [c for c in adjacent_cells(cell) if state[c-1] == "x"]
+        adj_cells = [c for c in adjacent_cells(cell) if state[c-1] == 'x']
 
         # Winning Fast: maximize number of adjacent cells containing an "x"
-        if mode == "WF": 
+        if mode == 'WF': 
             if len(adj_cells) > 1: 
                 chosen_cells.append(cell)
 
         # Conquer-the-Board: minimize number of adjacent cells containing an "x" 
-        elif mode == "CB":
+        elif mode == 'CB':
             if len(adj_cells) <= 1:
                 chosen_cells.append(cell)
             
@@ -101,46 +101,57 @@ def cells_aggressive(state, turn_nr, mode="WF"):
     return chosen_cells 
 
 
-def win_condition(state, chosen_cell): 
+def win_condition(state, chosen_cell, player='x'): 
     """
     Returns a set of winning predicates that are reachable from the 
-    current state and for which the chosen cell contributes to the 
-    winning configuration.
+    current state, for this player, and for which the chosen cell contributes 
+    to the winning configuration. Default: player is 'x'. Assumes 'o' is opponent.
     """
 
-    # Indices of "x" marks in winning states
+    # Indices of player's marks in winning states
     win_states = {
-        names.WIN1 : [1,2,3],
-        names.WIN2 : [4,5,6],
-        names.WIN3 : [7,8,9],
-        names.WIN4 : [1,4,7],
-        names.WIN5 : [2,5,8],
-        names.WIN6 : [3,6,9],
-        names.WIN7 : [1,5,9],
-        names.WIN8 : [3,5,7]
+        "1" : ([1,2,3], names.WIN1, names.LOSE1),
+        "2" : ([4,5,6], names.WIN2, names.LOSE2),
+        "3" : ([7,8,9], names.WIN3, names.LOSE3),
+        "4" : ([1,4,7], names.WIN4, names.LOSE4),
+        "5" : ([2,5,8], names.WIN5, names.LOSE5),
+        "6" : ([3,6,9], names.WIN6, names.LOSE6),
+        "7" : ([1,5,9], names.WIN7, names.LOSE7),
+        "8" : ([3,5,7], names.WIN8, names.LOSE8),
     }
 
     possible_wins = []
     impossible = False
 
     for w in win_states:
-        x_indices = win_states[w]
-        if chosen_cell in x_indices: 
+        winning_indices = win_states[w][0]
+        if chosen_cell in winning_indices: 
             impossible = False
 
             # Don't count winning condition if it is unreachable
-            for i in x_indices: 
-                if state[i-1] == "o":
-                    impossible = True
-                    break
-            
+            if player == 'x':
+                for i in winning_indices: 
+                    if state[i-1] == 'o':
+                        impossible = True
+                        break
+
+            else: 
+                for i in winning_indices: 
+                    if state[i-1] == 'x':
+                        impossible = True
+                        break
+                
             if impossible == False: 
-                possible_wins.append(w) 
+                if player == 'x':
+                    possible_wins.append(win_states[w][1]) 
+                else:
+                    possible_wins.append(win_states[w][2]) 
 
     return possible_wins
 
+
 # Some tests
-nice_state = ("x", "o", "x", None, None, None, "x", None, None)
+nice_state = ('x', 'o', 'x', None, None, None, 'x', None, None)
 nice_cell_nrs = [4,5,6,8,9]
 
 # print("probdist: ", string_of_choice_dist(nice_cell_nrs,2))

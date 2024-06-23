@@ -27,11 +27,11 @@ class Strategy(ABC):
     def choose_cells(self, state):
         pass
 
-    def win_conds(self, state, chosen_cells, max_turns):
+    def win_conds(self, state, chosen_cells, max_turns, player='x'):
         """
         Returns a list of Problog clauses stating winning conditions for each chosen cell.
         """
-        win_preds_per_cell = [sh.win_condition(state, c) for c in chosen_cells]
+        win_preds_per_cell = [sh.win_condition(state, c, player) for c in chosen_cells]
         clauses = []
         for win_preds_of_c in win_preds_per_cell: 
             cl = clause(
@@ -53,29 +53,6 @@ class Strategy(ABC):
 
 
     def run(self, state, max_turns=3):
-        """
-        Runs the Problog program with the given state using each of the cells 
-        from the preferred list as evidence; chooses the cell maximizing the 
-        probability of winning according to the winning conditions. 
-        """
-
-        self.problog_program.update_board(self.__board)
-        
-        cells = self.choose_cells(state)
-        play_options = sh.choice_dist(cells, 1)
-        self.problog_program.update_play(play_options)
-        
-        w_clauses = self.win_conds(state, cells, max_turns) 
-        win_term = function(WIN, constant(max_turns))
-        self.problog_program.update_win_conditions(*w_clauses)
-
-        q = query(win_term)
-        probs = {}
-
-        for i in range(len(cells)): 
-            ev = function(PLAY, cells[i], 1)
-            probs[cells[i]] = self.problog_program.query(q, evidence=ev)[win_term]
-
-        return max(probs, key=probs.get)
+        pass
     
     
