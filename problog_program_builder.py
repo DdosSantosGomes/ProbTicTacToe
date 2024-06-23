@@ -33,13 +33,14 @@ class ProbLogProgram:
     """
     
     def __init__(self, grid): 
-        self.grid = self._generate_grid() if grid is None else grid
-        self._init_board()
-        self._grid()
+        grid = self._generate_grid() if grid is None else grid
+        self._init_board(grid)
+        self._grid(grid)
         self._init_turns()
-        self._moves()
-        self._win_condition()
-        self._lose_condition()
+        self._moves(grid)
+        grid_size = sqrt(len(grid))
+        self._win_condition(grid_size)
+        self._lose_condition(grid_size)
 
     def _get_program(self):
         program = ''
@@ -86,10 +87,10 @@ class ProbLogProgram:
     def update_play(self, prob_dist):
         self._program['play'] = prob_dist
     
-    def _grid(self):
+    def _grid(self, grid):
         self._program['grid'] = ''
-        for cell_no in range(len(self.grid)):
-            current_cell = self.grid[cell_no]
+        for cell_no in range(len(grid)):
+            current_cell = grid[cell_no]
             p_good, p_neutral, p_bad = current_cell[0], current_cell[1], current_cell[2]
             good = probabilistic_fact(p_good, 
                                     function(CELL, constant(cell_no+1), GOOD, variable(A))
@@ -111,8 +112,8 @@ class ProbLogProgram:
             player = "x" if turn_no % 2 == 1 else "o"
             self._program['turns'] += fact(function(TURN, constant(player), constant(turn_no)))
 
-    def _init_board(self):
-        initial_config = (N,) * (len(self.grid)) + (0,)
+    def _init_board(self, grid):
+        initial_config = (N,) * (len(grid)) + (0,)
         self._program['start_board'] = fact(
             function(
                 BOARD, 
@@ -120,11 +121,11 @@ class ProbLogProgram:
                 )
             )
 
-    def _moves(self):
+    def _moves(self, grid):
         self._program['moves'] = ''
-        for cell_no in range(1, len(self.grid) + 1):
+        for cell_no in range(1, len(grid) + 1):
             before = ['S' + str(j) for j in range(1, cell_no)]
-            after = ['S' + str(k) for k in range(cell_no+1, len(self.grid)+1)]
+            after = ['S' + str(k) for k in range(cell_no+1, len(grid)+1)]
             before, after = [variable(x) for x in before], [variable(x) for x in after]
 
             prev_board = function(
@@ -187,13 +188,12 @@ class ProbLogProgram:
             )
             self._program['moves'] = self._program['moves'] + x_good + o_good + x_bad + o_bad + neutral
 
-    def _win_condition(self): # only defined for grid sizes up to 3, since this is what we are gonna use anyway
-        size = int(sqrt(len(self.grid)))
-        if size == 1:
+    def _win_condition(self, grid_size): # only defined for grid sizes up to 3, since this is what we are gonna use anyway
+        if grid_size == 1:
             self._program['win'] = "win(B) :- board(x,B).\n\n"
-        elif size == 2: # exclude diagonals for a more fair game
+        elif grid_size == 2: # exclude diagonals for a more fair game
             self._program['win'] = "win(B) :- board(x,x,_,_,B); board(x,_,x,_,B); board(_,x,_,x,B).\n\n"
-        elif size == 3:
+        elif grid_size == 3:
             self._program['win'] = ("win1(B) :- board(x,x,x,S4,S5,S6,S7,S8,S9,B).\n"
             + "win1(B) :- win1(A), B is A+1.\n"
             + "win2(B) :- board(S1,S2,S3,x,x,x,S7,S8,S9,B).\n"
@@ -214,13 +214,12 @@ class ProbLogProgram:
         else:
             raise ConditionUndefinedException("Win condition undefined for grid sizes > 3. Sorry!")
 
-    def _lose_condition(self): # only defined for grid sizes up to 3, since this is what we are gonna use anyway
-        size = int(sqrt(len(self.grid)))
-        if size == 1:
+    def _lose_condition(self, grid_size): # only defined for grid sizes up to 3, since this is what we are gonna use anyway
+        if grid_size == 1:
             self._program['lose'] = "lose(B) :- board(o,B).\n\n"
-        elif size == 2:
+        elif grid_size == 2:
             self._program['lose'] = "lose(B) :- board(o,o,_,_,B); board(o,_,o,_,B); board(_,o,_,o,B).\n\n"
-        elif size == 3:
+        elif grid_size == 3:
             self._program['lose'] = ("lose1(B) :- board(o,o,o,S4,S5,S6,S7,S8,S9,B).\n"
             + "lose1(B) :- lose1(A), B is A+1.\n"
             + "lose2(B) :- board(S1,S2,S3,o,o,o,S7,S8,S9,B).\n"
