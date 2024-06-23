@@ -1,6 +1,6 @@
 from grid import ProbTicTacToe
-from strategy import Strategy
-from win_fast_strategy import WinFastStrategy
+from abstract_strategy import Strategy
+from strategies import WinFastStrategy
 import random 
 import louiswork as louiswork
 
