@@ -10,7 +10,7 @@ class WinFastStrategy(Strategy):
         """
         Selects a preferred subset of the available cells (WF mode).
         """
-        return sh.cells_aggressive(state, 0, mode="WF")
+        return sh.cells_aggressive(state, 1, mode="WF")
 
 
 class ConquerBoardStrategy(Strategy):
@@ -19,7 +19,7 @@ class ConquerBoardStrategy(Strategy):
         """
         Selects a preferred subset of the available cells (CB mode).
         """
-        return sh.cells_aggressive(state, 0, mode="CB")
+        return sh.cells_aggressive(state, 1, mode="CB")
     
     
 if __name__ == "__main__":
