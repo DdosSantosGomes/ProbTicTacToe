@@ -76,7 +76,7 @@ class Game:
                 games_tied += 1
             else:
                 raise UnexpectedGameResultException('Unexpected result {}!'.format(result))
-        print('{} vs. {}: x won {} games, o won {} games, {} games tied'.format(type(s).__name__,self.opposing,gameswon_x,gameswon_o,games_tied))
+        print(f"{type(s).__name__ : <22} vs. {self.opposing : <7}| x won {gameswon_x} games, o won {gameswon_o} games, {games_tied} games tied")
         return gameswon_x, gameswon_o, games_tied
     
 
@@ -87,7 +87,7 @@ class UnexpectedGameResultException(Exception):
     pass
     
 if __name__ == "__main__":
-    number_games = 100
+    number_games = 1
 
     ## playing our strategies against LOUIS
     wf_v_louis = mp.Process(target=Game(games=number_games,opposing='louis').simulate, args=(E,WinFast))
