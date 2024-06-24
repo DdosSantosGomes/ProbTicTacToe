@@ -3,8 +3,9 @@ import random
 import louiswork
 
 from names import E, T, O, X
-from strategies_aggressive import WinFast
-
+from strategies_aggressive import *
+from strategies_defensive import *
+import multiprocess as mp
 
 class Game:
     """
@@ -14,6 +15,7 @@ class Game:
 
     def __init__(self, games = 100, opposing = 'louis'):
         self.games = games
+        self.opposing = opposing
         # opposing_strategy is a function taking (grid,state) and returning the next cell to be played
         if opposing == 'random':
             self.opposing_strategy = self._random_choice()
@@ -34,13 +36,13 @@ class Game:
         while louiswork.winner(state) == None:
             if first_player == X:
                 cell = strategy.run(state) - 1 # input the strategy we use here
-                print('selected move:', cell)
+                # print('selected move:', cell)
                 state = self._make_move(X, O, state, cell, grid)
                 first_player = O
             elif first_player == O:
                 # (_, _), (_, cell) = louiswork.value(grid, state)
                 cell = self.opposing_strategy(grid,state)
-                print('selected move:', cell)
+                # print('selected move:', cell)
                 state = self._make_move(O, X, state, cell, grid)
                 first_player = X
         else:
@@ -65,7 +67,7 @@ class Game:
             s = strategy(grid)
             initial_state = (None,) * 9
             result = self._play_one_game(grid, player, initial_state, s)
-            print('winner:', result)
+            # print('winner:', result)
             if result == X:
                 gameswon_x += 1
             elif result == O:
@@ -74,6 +76,7 @@ class Game:
                 games_tied += 1
             else:
                 raise UnexpectedGameResultException('Unexpected result {}!'.format(result))
+        print(f"{type(s).__name__ : <22} vs. {self.opposing : <7}| x won {gameswon_x} games, o won {gameswon_o} games, {games_tied} games tied")
         return gameswon_x, gameswon_o, games_tied
     
 
@@ -84,5 +87,25 @@ class UnexpectedGameResultException(Exception):
     pass
     
 if __name__ == "__main__":
-    results = Game(games=25,opposing='louis').simulate(X,WinFast)
-    print('\n\n x won {} games; o won {} games, {} games tied'.format(results[0],results[1],results[2]))
+    number_games = 1
+
+    ## playing our strategies against LOUIS
+    wf_v_louis = mp.Process(target=Game(games=number_games,opposing='louis').simulate, args=(E,WinFast))
+    cba_v_louis = mp.Process(target=Game(games=number_games,opposing='louis').simulate, args=(E,ConquerBoardAggressive))
+    tf_v_louis = mp.Process(target=Game(games=number_games,opposing='louis').simulate, args=(E,TieFast))
+    cbd_v_louis = mp.Process(target=Game(games=number_games,opposing='louis').simulate, args=(E,ConquerBoardDefensive))
+
+    # ## playing our strategies against RANDOM
+    wf_v_rand = mp.Process(target=Game(games=number_games,opposing='random').simulate, args=(E,WinFast))
+    cba_v_rand = mp.Process(target=Game(games=number_games,opposing='random').simulate, args=(E,ConquerBoardAggressive))
+    tf_v_rand = mp.Process(target=Game(games=number_games,opposing='random').simulate, args=(E,TieFast))
+    cbd_v_rand = mp.Process(target=Game(games=number_games,opposing='random').simulate, args=(E,ConquerBoardDefensive))
+
+    wf_v_louis.start()
+    cba_v_louis.start()
+    tf_v_louis.start()
+    cbd_v_louis.start()
+    wf_v_rand.start()
+    cba_v_rand.start()
+    tf_v_rand.start()
+    cbd_v_rand.start()
