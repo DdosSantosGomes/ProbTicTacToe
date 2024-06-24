@@ -8,7 +8,7 @@ class DefensiveStrategy(Strategy):
     # as it does not define _choose_candidate_cells_to_test
 
     def _end_conditions(self, state, cells, player):
-        return self._win_condions_for_chosen_cells(state, cells, player)
+        return self._win_conditons_for_chosen_cells(state, cells, player)
 
     def _condition_term(self):
         return function(LOSE, constant(self.max_turns))
