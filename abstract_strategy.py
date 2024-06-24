@@ -99,7 +99,7 @@ class Strategy(ABC):
         } 
         (i,j) = coord_dict[str(cell_nr)]
         if cell_nr == 5: # 5 is middle cell: all cells are adjacent
-            return [1,2,3,4,6,7,8,9]
+            return [ c + 1 for c in louiswork.available_cells(self.state) ]
         else:
             adj_coords = [(i-1,j), (i,j-1), (i+1,j), (i,j+1),
                             (i-1,j-1), (i-1,j+1), (i+1,j-1), (i+1,j+1)]
@@ -128,7 +128,7 @@ class Strategy(ABC):
             else: 
                 return None
         if chosen_cells == []: # If none of the cells meet the conditions, default to all possible moves
-            return [*range(1,10)]
+            return [ c + 1 for c in louiswork.available_cells(state) ]
         return chosen_cells 
     
     def _win_condions_for_chosen_cells(self, state, chosen_cells, player='x'):
