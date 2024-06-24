@@ -25,27 +25,26 @@ class Strategy(ABC):
         self.problog_program.update_board(self._board(state)) 
         # second: tell ProbLog which cells are available to play in
         candidate_cells = self._choose_candidate_cells_to_test(state)
-        play_options = ''
-        for i in range(1, self.max_turns + 1):
-            play_options += self._choice_dist(candidate_cells, i)
+        play_options = self._choice_dist(candidate_cells)
         self.problog_program.update_play(play_options)
         # third: specify end conditions to ProbLog
         end_condition_clauses = self._end_conditions(state, candidate_cells, player=X) 
         end_condition_term = self._condition_term()
-        self.problog_program.update_end_conditions(*end_condition_clauses)
-        end_condition_query = query(end_condition_term)
+        # self.problog_program.update_end_conditions(*end_condition_clauses)
+        # end_condition_query = query(end_condition_term)
+        end_condition_query = 'query(win(3)).'
         probs = {} # dict of key = cell and value = probability of reaching the desired end condition
         ### next: query the ProbLog program with evidence of playing the candidate cells
         for cell in candidate_cells: 
             ev = evidence(function(PLAY, constant(cell), constant(1)))
 
-            print('state:', state)
-            print('cells to choose from:', candidate_cells)
-            print('key:', end_condition_term + str(type(end_condition_term)))
+            # print('state:', state)
+            # print('cells to choose from:', candidate_cells)
+            # print('key:', end_condition_term + str(type(end_condition_term)))
 
             prob = self.problog_program.query(end_condition_query, evidence=ev)
 
-            print('result:', prob)
+            # print('result:', prob)
 
             probs[cell] = prob
         ### last: find the optimal cell to play, and send it back to the Game simulator
@@ -69,9 +68,9 @@ class Strategy(ABC):
         """ Choose a cell to play, according to our strategy. """
         pass
 
-    def _choice_dist(self, av_cell_nrs, turn_nr):
+    def _choice_dist(self, av_cell_nrs):
         """ Returns a ProbLog annotated disjunction with body, consisting of the
-        uniform probability distribution over a given list of cell numbers, given the current turn. 
+        uniform probability distribution over a given list of cell numbers.
         This encodes the possible choices we are allowed to make in ProbLog. """
         total = len(av_cell_nrs)
         probs = []
@@ -79,13 +78,14 @@ class Strategy(ABC):
             probs.append(
                 probabilistic_fact(
                     prob = 1/total, 
-                    f = function(PLAY, constant(c), constant(turn_nr))))
+                    f = function(PLAY, constant(c), variable(A))))
         return annotated_disjunction_with_body(
             annotated_disj = annotated_disjunction(*probs),
             body = function(TURN, ANY, variable(A))
         )
+
     
-    def _adjacent_cells(self, cell_nr):
+    def _adjacent_cells(self, cell_nr, state):
         """ Returns the cell numbers surrounding a given cell number (including diagonals), on a 3x3 grid. """
         if not (cell_nr in range(1,10)):
             raise IndexOutOfBoundsException('Off the grid! {} should be an int between 1-9'.format(cell_nr))
@@ -96,7 +96,7 @@ class Strategy(ABC):
         } 
         (i,j) = coord_dict[str(cell_nr)]
         if cell_nr == 5: # 5 is middle cell: all cells are adjacent
-            return [ c + 1 for c in louiswork.available_cells(self.state) ]
+            return [ c + 1 for c in louiswork.available_cells(state) ]
         else:
             adj_coords = [(i-1,j), (i,j-1), (i+1,j), (i,j+1),
                             (i-1,j-1), (i-1,j+1), (i+1,j-1), (i+1,j+1)]
@@ -115,7 +115,7 @@ class Strategy(ABC):
         cells = [ c + 1 for c in louiswork.available_cells(state) ]
         chosen_cells = []
         for cell in cells:
-            adj_cells = [ c for c in self._adjacent_cells(cell) if state[c-1] == X ]
+            adj_cells = [ c for c in self._adjacent_cells(cell, state) if state[c-1] == X ]
             if mode == 'WF': # maximize number of adjacent cells containing an x
                 if len(adj_cells) > 1: 
                     chosen_cells.append(cell)
@@ -182,12 +182,17 @@ class Strategy(ABC):
     def _board(self, state):
         """ Returns a ProbLog fact encoding the current state of the board. """
         new_state = []
-        for s in state:
-            if s == None: 
-                new_state.append(constant(N))
+        for cell_nr in range(1, 10):
+            current_state = state[cell_nr - 1]
+            if current_state == None: 
+                new_state.append(
+                    fact(function(BOARD, constant(cell_nr), constant(N), 0))
+                )
             else: 
-                new_state.append(constant(s))
-        return fact(function(BOARD, *(new_state + [0])))
+                new_state.append(
+                    fact(function(BOARD, constant(cell_nr), constant(current_state), 0))
+                )
+        return new_state
     
 
 class IndexOutOfBoundsException(Exception):

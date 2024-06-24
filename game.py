@@ -16,18 +16,24 @@ class Game:
         self.games = games
         # opposing_strategy is a function taking (grid,state) and returning the next cell to be played
         if opposing == 'random':
-            self.opposing_strategy = lambda _,state : random.choice(filter(lambda cell : cell is None, state))
+            self.opposing_strategy = self._random_choice()
         elif opposing == 'louis':
             self.opposing_strategy = lambda grid,state : louiswork.value(grid,state)[1][1]
         else:
             raise UnsupportedOpposingStrategyException('The opposing strategy {} is not supported.'.format(opposing))
+
+    def _random_choice(self):
+        return lambda _,state : random.choice(
+            [ cell_index for cell_index in [ i if state[i] is None else None for i in range(len(state)) ]
+                if cell_index is not None ] 
+        )
 
     def _play_one_game(self, grid, first_player, state, strategy):
         if first_player == E:
             first_player = random.choice((X,O))
         while louiswork.winner(state) == None:
             if first_player == X:
-                cell = strategy.run(state) # input the strategy we use here
+                cell = strategy.run(state) - 1 # input the strategy we use here
                 print('selected move:', cell)
                 state = self._make_move(X, O, state, cell, grid)
                 first_player = O
@@ -59,6 +65,7 @@ class Game:
             s = strategy(grid)
             initial_state = (None,) * 9
             result = self._play_one_game(grid, player, initial_state, s)
+            print('winner:', result)
             if result == X:
                 gameswon_x += 1
             elif result == O:
@@ -77,4 +84,5 @@ class UnexpectedGameResultException(Exception):
     pass
     
 if __name__ == "__main__":
-    Game(games=1).simulate(X,WinFast)
+    results = Game(games=25,opposing='louis').simulate(X,WinFast)
+    print('\n\n x won {} games; o won {} games, {} games tied'.format(results[0],results[1],results[2]))

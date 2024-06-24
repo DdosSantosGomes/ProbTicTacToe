@@ -59,6 +59,12 @@ def function(name, *args):
                                              Which {} is not!'.format(arg))
     return "{f}({xs})".format(f=name, xs=",".join(args))
 
+def negate(term):
+    """
+    Returns the negation of a term - use constant and function with this.
+    """
+    return '\+' + term
+
 def fact(term):
     """
     Returns a ProbLog fact. Input: term (constant or function).
