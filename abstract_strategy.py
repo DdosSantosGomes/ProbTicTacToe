@@ -1,4 +1,3 @@
-from math import sqrt
 from abc import ABC, abstractmethod
 
 import louiswork
@@ -13,8 +12,6 @@ class Strategy(ABC):
     which calculates the optimal move according to a strategy, from a given state,
     with a default lookahead of 3 turns.
     """
-
-    initial_state = (None,) * 9
     
     def __init__(self, grid, max_turns = 3):
         self.grid = grid
@@ -109,7 +106,7 @@ class Strategy(ABC):
     def _cells_aggressive(self, state, mode='WF'): 
         """ Two aggressive strategies: try winning as fast as possible (by favouring tiles
         surrounded by other x's), or try 'conquering the board' (by spreading out your
-        choices over the board). Returns a set of chosen cell numbers.
+        choices over the board). Returns a list of chosen cells.
 
         For Winning Fast mode choose mode="WF" (default); 
         for Conquer-the-Board mode choose mode="CB". """
@@ -127,8 +124,8 @@ class Strategy(ABC):
                     chosen_cells.append(cell)
             else: 
                 return None
-        if chosen_cells == []: # If none of the cells meet the conditions, default to all possible moves
-            return [*range(1,10)]
+        if chosen_cells == []: # If none of the cells meet the conditions, default to all available cells
+            return list(louiswork.available_cells(state))
         return chosen_cells 
     
     def _win_condions_for_chosen_cells(self, state, chosen_cells, player='x'):

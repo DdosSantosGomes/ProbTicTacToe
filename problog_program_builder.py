@@ -39,7 +39,7 @@ class ProbLogProgram:
     def _get_program(self):
         program = ''
         for index,prog in self._program.items():
-            if index == 'queries' or index == 'evidence':
+            if index == 'query' or index == 'evidence':
                 continue
             program += prog
         # make sure that we add evidence and then queries at the end of the program
@@ -67,7 +67,7 @@ class ProbLogProgram:
 
     def update_end_conditions(self, *conditions):
         for condition in conditions: 
-            self._program['extra_end_conditions'] += condition
+            self._program['extra_end_conditions'] = condition
 
     def update_play(self, prob_dist):
         self._program['play'] = prob_dist
@@ -100,8 +100,8 @@ class ProbLogProgram:
     def _moves(self):
         self._program['moves'] = ''
         for cell_no in range(1, 10):
-            before = ['S' + str(j) for j in range(1, cell_no)]
-            after = ['S' + str(k) for k in range(cell_no+1, 10)]
+            before = [S + str(j) for j in range(1, cell_no)]
+            after = [S + str(k) for k in range(cell_no+1, 10)]
             before, after = [variable(x) for x in before], [variable(x) for x in after]
 
             prev_board = function(

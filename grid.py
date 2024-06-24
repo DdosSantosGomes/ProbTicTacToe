@@ -1,5 +1,4 @@
-import random
-
+import louiswork
 
 class ProbTicTacToe:
     """
@@ -13,10 +12,5 @@ class ProbTicTacToe:
         self.grid = self._generate_grid()
 
     def _generate_grid(self):
-        def generate_square():
-            neutral = random.choice(range(5, 35, 5))
-            success = random.choice(range(30, 100 - neutral + 5, 5))
-            failure = 100 - neutral - success
-            return success / 100, neutral / 100, failure / 100
-        return tuple(generate_square() for _ in range(self.grid_size ** 2))
+        return louiswork.generate_grid()
     
