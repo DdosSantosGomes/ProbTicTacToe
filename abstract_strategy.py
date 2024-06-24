@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import random
 
 import louiswork
 from problog_program_builder import ProbLogProgram
@@ -29,8 +30,20 @@ class Strategy(ABC):
         self.problog_program.update_play(play_options)
         # third: specify end conditions to ProbLog
         end_condition_clauses = self._end_conditions(state, candidate_cells, player=X) 
+        # Only keep those candidate cells that have nonempty winning conditions
+        winning_candidates = []
+        winning_clauses = []
+        for i in range(len(end_condition_clauses)):
+            if not end_condition_clauses[i] == "":
+                winning_candidates.append(candidate_cells[i])
+                winning_clauses.append(end_condition_clauses[i])
         end_condition_term = self._condition_term()
-        # self.problog_program.update_end_conditions(*end_condition_clauses)
+        # If no candidates are left, select a random available cell
+        if winning_candidates == []:
+            cell = random.choice(candidate_cells)
+            # print("no available cells! I chose", cell)
+            return cell
+        # self.problog_program.update_end_conditions(*winning_clauses)
         # end_condition_query = query(end_condition_term)
         end_condition_query = 'query(win(3)).'
         probs = {} # dict of key = cell and value = probability of reaching the desired end condition
