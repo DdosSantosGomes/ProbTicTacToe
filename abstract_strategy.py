@@ -125,8 +125,6 @@ class Strategy(ABC):
             else: 
                 return None
         if chosen_cells == []: # If none of the cells meet the conditions, default to all available cells
-            return list(louiswork.available_cells(state))
-        if chosen_cells == []: # If none of the cells meet the conditions, default to all possible moves
             return [ c + 1 for c in louiswork.available_cells(state) ]
         return chosen_cells 
     
