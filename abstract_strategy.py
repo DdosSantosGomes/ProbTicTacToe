@@ -128,17 +128,20 @@ class Strategy(ABC):
             return [ c + 1 for c in louiswork.available_cells(state) ]
         return chosen_cells 
     
-    def _win_condions_for_chosen_cells(self, state, chosen_cells, player='x'):
+    def _win_conditons_for_chosen_cells(self, state, chosen_cells, player='x'):
         """ Returns a list of ProbLog clauses, stating winning conditions for each chosen cell. """
-        win_preds_per_cell = [ self._win_condition_for_cell(state, c, player) for c in chosen_cells ]
+        win_preds_per_cell = [ self._win_condition_for_cell(state, c, player) for c in chosen_cells ]   
         clauses = []
         for win_preds_of_c in win_preds_per_cell: 
-            cl = clause(
-                head = function(WIN, constant(self.max_turns)),
-                body = term_disj(
-                    *[ function(win_pred, constant(self.max_turns)) for win_pred in win_preds_of_c ]
-                    )
-            )
+            if win_preds_of_c == []: 
+                cl = "" # Return an empty clause for cells that can't contribute to a win
+            else:
+                cl = clause(
+                    head = function(WIN, constant(self.max_turns)),
+                    body = term_disj(
+                        *[ function(win_pred, constant(self.max_turns)) for win_pred in win_preds_of_c ]
+                        )
+                )
             clauses.append(cl)
         return clauses
     
