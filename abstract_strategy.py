@@ -134,16 +134,14 @@ class Strategy(ABC):
         clauses = []
         for win_preds_of_c in win_preds_per_cell: 
             if win_preds_of_c == []: 
-                b = "" # Return an empty body for cells that can't contribute to a win
+                cl = "" # Return an empty clause for cells that can't contribute to a win
             else:
-                b = term_disj(
+                cl = clause(
+                    head = function(WIN, constant(self.max_turns)),
+                    body = term_disj(
                         *[ function(win_pred, constant(self.max_turns)) for win_pred in win_preds_of_c ]
                         )
-                
-            cl = clause(
-                head = function(WIN, constant(self.max_turns)),
-                body = b
-            )
+                )
             clauses.append(cl)
         return clauses
     
