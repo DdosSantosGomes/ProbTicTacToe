@@ -76,7 +76,7 @@ class Game:
                 games_tied += 1
             else:
                 raise UnexpectedGameResultException('Unexpected result {}!'.format(result))
-        print(f"{type(s).__name__ : <22} vs. {self.opposing : <7}| x won {gameswon_x} games, o won {gameswon_o} games, {games_tied} games tied")
+        print(f"{type(s).__name__ + " (x)": <22} vs. {self.opposing + "(o)" : <7}| x won {gameswon_x} games, o won {gameswon_o} games, {games_tied} games tied")
         return gameswon_x, gameswon_o, games_tied
     
 
