@@ -24,26 +24,28 @@ class Strategy(ABC):
         ### pipeline: update ProbLog program -> query it -> find optimal cell
         # first: update the state of the board in ProbLog
         self.problog_program.update_board(self._board(state)) 
-        # second: tell ProbLog which cells are available to play in
+        # second: tell ProbLog which cells are candidates
         candidate_cells = self._choose_candidate_cells_to_test(state)
-        play_options = self._choice_dist(candidate_cells)
+        # and which cells are available to play in the current state
+        play_options = self._choice_dist([c + 1 for c in louiswork.available_cells(state)])
         self.problog_program.update_play(play_options)
         # third: specify end conditions to ProbLog
         end_condition_clauses = self._end_conditions(state, candidate_cells, player=X) 
         # Only keep those candidate cells that have nonempty winning conditions
         winning_candidates = []
         winning_clauses = []
-        for i in range(len(end_condition_clauses)):
-            if not end_condition_clauses[i] == "":
-                winning_candidates.append(candidate_cells[i])
-                winning_clauses.append(end_condition_clauses[i])
-        end_condition_term = self._condition_term()
+        # End condition clauses can only be empty in the defensive case 
+        # when it's impossible to lose
+        if not end_condition_clauses == "":
+            for i in range(len(end_condition_clauses)):
+                if not end_condition_clauses[i] == "":
+                    winning_candidates.append(candidate_cells[i])
+                    winning_clauses.append(end_condition_clauses[i])
+            end_condition_term = self._condition_term()
         # If no candidates are left, select a random available cell
         if winning_candidates == []:
-            cell = random.choice(candidate_cells)
-            # print("no available cells! I chose", cell)
-            return cell
-        # self.problog_program.update_end_conditions(*winning_clauses)
+            return random.choice(candidate_cells)
+        self.problog_program.update_end_conditions(*winning_clauses)
         # end_condition_query = query(end_condition_term)
         end_condition_query = 'query(win(3)).'
         probs = {} # dict of key = cell and value = probability of reaching the desired end condition
@@ -54,7 +56,6 @@ class Strategy(ABC):
             # print('state:', state)
             # print('cells to choose from:', candidate_cells)
             # print('key:', end_condition_term + str(type(end_condition_term)))
-
             prob = self.problog_program.query(end_condition_query, evidence=ev)
 
             # print('result:', prob)
@@ -158,19 +159,57 @@ class Strategy(ABC):
             clauses.append(cl)
         return clauses
     
+    def _losing_conditions(self, state): 
+        """ Returns a list of ProbLog clauses, stating losing conditions for player x for that state. """
+        lose_states = { # Indices of winner's marks in losing states
+            "1" : ([1,2,3], LOSE1),
+            "2" : ([4,5,6], LOSE2),
+            "3" : ([7,8,9], LOSE3),
+            "4" : ([1,4,7], LOSE4),
+            "5" : ([2,5,8], LOSE5),
+            "6" : ([3,6,9], LOSE6),
+            "7" : ([1,5,9], LOSE7),
+            "8" : ([3,5,7], LOSE8),
+        }
+        # Define reachable losing configurations
+        possible_losses = []
+        for w in lose_states:
+            impossible = False
+            winning_indices = lose_states[w][0]
+            # Don't count losing condition if it is unreachable
+            for i in winning_indices: 
+                if state[i-1] == X:
+                    impossible = True
+                    break
+            if not impossible: 
+                possible_losses.append(lose_states[w][1]) 
+        # Define resulting clauses
+        clauses = []
+        if possible_losses == []:
+            cl = "" # Return an empty clause if we can't lose
+        else: 
+            cl = clause(
+                head = function(LOSE, constant(self.max_turns)),
+                body = term_disj(
+                    *[ function(lose_pred, constant(self.max_turns)) for lose_pred in possible_losses  ]
+                    )
+            )
+        clauses.append(cl)
+        return clauses
+    
     def _win_condition_for_cell(self, state, chosen_cell, player='x'): 
         """ Returns a set of winning predicates that are reachable from the 
         current state, for this player, and for which the chosen cell contributes 
         to the winning configuration. Default: player is 'x'. Assumes 'o' is opponent. """
         win_states = { # Indices of player's marks in winning states
-            "1" : ([1,2,3], WIN1, LOSE1),
-            "2" : ([4,5,6], WIN2, LOSE2),
-            "3" : ([7,8,9], WIN3, LOSE3),
-            "4" : ([1,4,7], WIN4, LOSE4),
-            "5" : ([2,5,8], WIN5, LOSE5),
-            "6" : ([3,6,9], WIN6, LOSE6),
-            "7" : ([1,5,9], WIN7, LOSE7),
-            "8" : ([3,5,7], WIN8, LOSE8),
+            "1" : ([1,2,3], WIN1),
+            "2" : ([4,5,6], WIN2),
+            "3" : ([7,8,9], WIN3),
+            "4" : ([1,4,7], WIN4),
+            "5" : ([2,5,8], WIN5),
+            "6" : ([3,6,9], WIN6),
+            "7" : ([1,5,9], WIN7),
+            "8" : ([3,5,7], WIN8),
         }
         possible_wins = []
         impossible = False
@@ -189,10 +228,7 @@ class Strategy(ABC):
                             impossible = True
                             break
                 if not impossible: 
-                    if player == X:
-                        possible_wins.append(win_states[w][1]) 
-                    else:
-                        possible_wins.append(win_states[w][2]) 
+                    possible_wins.append(win_states[w][1]) 
         return possible_wins
 
     def _board(self, state):
@@ -208,8 +244,7 @@ class Strategy(ABC):
                 new_state.append(
                     fact(function(BOARD, constant(cell_nr), constant(current_state), 0))
                 )
-        return new_state
-    
+        return new_state   
 
 class IndexOutOfBoundsException(Exception):
     pass
