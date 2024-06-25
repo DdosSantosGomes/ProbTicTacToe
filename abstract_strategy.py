@@ -54,7 +54,6 @@ class Strategy(ABC):
             # print('state:', state)
             # print('cells to choose from:', candidate_cells)
             # print('key:', end_condition_term + str(type(end_condition_term)))
-
             prob = self.problog_program.query(end_condition_query, evidence=ev)
 
             # print('result:', prob)
@@ -158,19 +157,44 @@ class Strategy(ABC):
             clauses.append(cl)
         return clauses
     
+    def _losing_conditions(self, state): 
+        """ Returns a list of ProbLog clauses, stating losing conditions for player x for that state. """
+        lose_states = { # Indices of winner's marks in losing states
+            "1" : ([1,2,3], LOSE1),
+            "2" : ([4,5,6], LOSE2),
+            "3" : ([7,8,9], LOSE3),
+            "4" : ([1,4,7], LOSE4),
+            "5" : ([2,5,8], LOSE5),
+            "6" : ([3,6,9], LOSE6),
+            "7" : ([1,5,9], LOSE7),
+            "8" : ([3,5,7], LOSE8),
+        }
+        possible_losses = []
+        for w in lose_states:
+            impossible = False
+            winning_indices = lose_states[w][0]
+            # Don't count losing condition if it is unreachable
+            for i in winning_indices: 
+                if state[i-1] == X:
+                    impossible = True
+                    break
+            if not impossible: 
+                possible_losses.append(lose_states[w][1]) 
+        return possible_losses
+    
     def _win_condition_for_cell(self, state, chosen_cell, player='x'): 
         """ Returns a set of winning predicates that are reachable from the 
         current state, for this player, and for which the chosen cell contributes 
         to the winning configuration. Default: player is 'x'. Assumes 'o' is opponent. """
         win_states = { # Indices of player's marks in winning states
-            "1" : ([1,2,3], WIN1, LOSE1),
-            "2" : ([4,5,6], WIN2, LOSE2),
-            "3" : ([7,8,9], WIN3, LOSE3),
-            "4" : ([1,4,7], WIN4, LOSE4),
-            "5" : ([2,5,8], WIN5, LOSE5),
-            "6" : ([3,6,9], WIN6, LOSE6),
-            "7" : ([1,5,9], WIN7, LOSE7),
-            "8" : ([3,5,7], WIN8, LOSE8),
+            "1" : ([1,2,3], WIN1),
+            "2" : ([4,5,6], WIN2),
+            "3" : ([7,8,9], WIN3),
+            "4" : ([1,4,7], WIN4),
+            "5" : ([2,5,8], WIN5),
+            "6" : ([3,6,9], WIN6),
+            "7" : ([1,5,9], WIN7),
+            "8" : ([3,5,7], WIN8),
         }
         possible_wins = []
         impossible = False
@@ -189,10 +213,7 @@ class Strategy(ABC):
                             impossible = True
                             break
                 if not impossible: 
-                    if player == X:
-                        possible_wins.append(win_states[w][1]) 
-                    else:
-                        possible_wins.append(win_states[w][2]) 
+                    possible_wins.append(win_states[w][1]) 
         return possible_wins
 
     def _board(self, state):
@@ -208,8 +229,7 @@ class Strategy(ABC):
                 new_state.append(
                     fact(function(BOARD, constant(cell_nr), constant(current_state), 0))
                 )
-        return new_state
-    
+        return new_state   
 
 class IndexOutOfBoundsException(Exception):
     pass

@@ -87,7 +87,7 @@ class UnexpectedGameResultException(Exception):
     pass
     
 if __name__ == "__main__":
-    number_games = 1
+    number_games = 5
 
     ## playing our strategies against LOUIS
     wf_v_louis = mp.Process(target=Game(games=number_games,opposing='louis').simulate, args=(E,WinFast))
