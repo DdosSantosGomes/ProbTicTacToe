@@ -27,24 +27,25 @@ class Strategy(ABC):
         # second: tell ProbLog which cells are candidates
         candidate_cells = self._choose_candidate_cells_to_test(state)
         # and which cells are available to play in the current state
-        play_options = self.choice_dist([c + 1 for c in louiswork.available_cells(state)], 1)
+        play_options = self._choice_dist([c + 1 for c in louiswork.available_cells(state)])
         self.problog_program.update_play(play_options)
         # third: specify end conditions to ProbLog
         end_condition_clauses = self._end_conditions(state, candidate_cells, player=X) 
         # Only keep those candidate cells that have nonempty winning conditions
         winning_candidates = []
         winning_clauses = []
-        for i in range(len(end_condition_clauses)):
-            if not end_condition_clauses[i] == "":
-                winning_candidates.append(candidate_cells[i])
-                winning_clauses.append(end_condition_clauses[i])
-        end_condition_term = self._condition_term()
+        # End condition clauses can only be empty in the defensive case 
+        # when it's impossible to lose
+        if not end_condition_clauses == "":
+            for i in range(len(end_condition_clauses)):
+                if not end_condition_clauses[i] == "":
+                    winning_candidates.append(candidate_cells[i])
+                    winning_clauses.append(end_condition_clauses[i])
+            end_condition_term = self._condition_term()
         # If no candidates are left, select a random available cell
         if winning_candidates == []:
-            cell = random.choice(candidate_cells)
-            # print("no available cells! I chose", cell)
-            return cell
-        # self.problog_program.update_end_conditions(*winning_clauses)
+            return random.choice(candidate_cells)
+        self.problog_program.update_end_conditions(*winning_clauses)
         # end_condition_query = query(end_condition_term)
         end_condition_query = 'query(win(3)).'
         probs = {} # dict of key = cell and value = probability of reaching the desired end condition
@@ -170,6 +171,7 @@ class Strategy(ABC):
             "7" : ([1,5,9], LOSE7),
             "8" : ([3,5,7], LOSE8),
         }
+        # Define reachable losing configurations
         possible_losses = []
         for w in lose_states:
             impossible = False
@@ -181,7 +183,19 @@ class Strategy(ABC):
                     break
             if not impossible: 
                 possible_losses.append(lose_states[w][1]) 
-        return possible_losses
+        # Define resulting clauses
+        clauses = []
+        if possible_losses == []:
+            cl = "" # Return an empty clause if we can't lose
+        else: 
+            cl = clause(
+                head = function(LOSE, constant(self.max_turns)),
+                body = term_disj(
+                    *[ function(lose_pred, constant(self.max_turns)) for lose_pred in possible_losses  ]
+                    )
+            )
+        clauses.append(cl)
+        return clauses
     
     def _win_condition_for_cell(self, state, chosen_cell, player='x'): 
         """ Returns a set of winning predicates that are reachable from the 
