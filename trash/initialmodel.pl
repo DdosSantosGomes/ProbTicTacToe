@@ -1,79 +1,62 @@
-board(n,n,n,n,n,n,n,n,n,0).
-
-0.6 :: cell(g,1,A); 0.3 :: cell(n,1,A); 0.1 :: cell(b,1,A) :- turn(_,A).
-0.6 :: cell(g,2,A); 0.3 :: cell(n,2,A); 0.1 :: cell(b,2,A) :- turn(_,A).
-0.7 :: cell(g,3,A); 0.15 :: cell(n,3,A); 0.15 :: cell(b,3,A) :- turn(_,A).
-0.45 :: cell(g,4,A); 0.15 :: cell(n,4,A); 0.4 :: cell(b,4,A) :- turn(_,A).
-0.6 :: cell(g,5,A); 0.15 :: cell(n,5,A); 0.25 :: cell(b,5,A) :- turn(_,A).
-0.75 :: cell(g,6,A); 0.15 :: cell(n,6,A); 0.1 :: cell(b,6,A) :- turn(_,A).
-0.7 :: cell(g,7,A); 0.3 :: cell(n,7,A); 0.0 :: cell(b,7,A) :- turn(_,A).
-0.3 :: cell(g,8,A); 0.05 :: cell(n,8,A); 0.65 :: cell(b,8,A) :- turn(_,A).
-0.55 :: cell(g,9,A); 0.3 :: cell(n,9,A); 0.15 :: cell(b,9,A) :- turn(_,A).
+0.4 :: cell(1,good,A); 0.3 :: cell(1,neutral,A); 0.3 :: cell(1,bad,A) :- turn(_,A).
+0.8 :: cell(2,good,A); 0.1 :: cell(2,neutral,A); 0.1 :: cell(2,bad,A) :- turn(_,A).
+0.6 :: cell(3,good,A); 0.25 :: cell(3,neutral,A); 0.15 :: cell(3,bad,A) :- turn(_,A).
+0.45 :: cell(4,good,A); 0.25 :: cell(4,neutral,A); 0.3 :: cell(4,bad,A) :- turn(_,A).
+0.35 :: cell(5,good,A); 0.3 :: cell(5,neutral,A); 0.35 :: cell(5,bad,A) :- turn(_,A).
+0.45 :: cell(6,good,A); 0.15 :: cell(6,neutral,A); 0.4 :: cell(6,bad,A) :- turn(_,A).
+0.4 :: cell(7,good,A); 0.25 :: cell(7,neutral,A); 0.35 :: cell(7,bad,A) :- turn(_,A).
+0.95 :: cell(8,good,A); 0.05 :: cell(8,neutral,A); 0.0 :: cell(8,bad,A) :- turn(_,A).
+0.55 :: cell(9,good,A); 0.05 :: cell(9,neutral,A); 0.4 :: cell(9,bad,A) :- turn(_,A).
 
 turn(x,1).
 turn(o,2).
 turn(x,3).
 
-choose(1,1).
-choose(2,1).
-choose(3,1).
-choose(4,1).
-choose(5,1).
-choose(6,1).
-choose(7,1).
-choose(8,1).
-choose(9,1).
+board(C,P,B) :- board(C,n,A), cell(C,good,B), turn(P,B), play(C,B), B is A+1.
+board(C,o,B) :- board(C,n,A), cell(C,bad,B), turn(x,B), play(C,B), B is A+1.
+board(C,x,B) :- board(C,n,A), cell(C,bad,B), turn(o,B), play(C,B), B is A+1.
+board(C,n,B) :- board(C,n,A), cell(C,good,B), turn(_,B), play(C,B), B is A+1.
+board(C,P,B) :- board(C,P,A), turn(_,B), \+play(C,B), B is A+1.
 
-choose(N,B) :- choose(N,A), cell(n,N,A), B is A+1.
+win1(A) :- board(1,x,A),board(2,x,A),board(3,x,A).
+win2(A) :- board(4,x,A),board(5,x,A),board(6,x,A).
+win3(A) :- board(7,x,A),board(8,x,A),board(9,x,A).
+win4(A) :- board(1,x,A),board(4,x,A),board(7,x,A).
+win5(A) :- board(2,x,A),board(5,x,A),board(8,x,A).
+win6(A) :- board(3,x,A),board(6,x,A),board(9,x,A).
+win7(A) :- board(3,x,A),board(5,x,A),board(7,x,A).
+win8(A) :- board(1,x,A),board(5,x,A),board(9,x,A).
 
-board(x,S2,S3,S4,S5,S6,S7,S8,S9,B) :- board(n,S2,S3,S4,S5,S6,S7,S8,S9,A), turn(x,B), cell(g,1,B), B is A+1.
-board(o,S2,S3,S4,S5,S6,S7,S8,S9,B) :- board(n,S2,S3,S4,S5,S6,S7,S8,S9,A), turn(o,B), cell(g,1,B), B is A+1.
-board(x,S2,S3,S4,S5,S6,S7,S8,S9,B) :- board(n,S2,S3,S4,S5,S6,S7,S8,S9,A), turn(o,B), cell(b,1,B), B is A+1.
-board(o,S2,S3,S4,S5,S6,S7,S8,S9,B) :- board(n,S2,S3,S4,S5,S6,S7,S8,S9,A), turn(x,B), cell(b,1,B), B is A+1.
-board(n,S2,S3,S4,S5,S6,S7,S8,S9,B) :- board(n,S2,S3,S4,S5,S6,S7,S8,S9,A), turn(_,B), cell(n,1,B), B is A+1.
-board(S1,x,S3,S4,S5,S6,S7,S8,S9,B) :- board(S1,n,S3,S4,S5,S6,S7,S8,S9,A), turn(x,B), cell(g,2,B), B is A+1.
-board(S1,o,S3,S4,S5,S6,S7,S8,S9,B) :- board(S1,n,S3,S4,S5,S6,S7,S8,S9,A), turn(o,B), cell(g,2,B), B is A+1.
-board(S1,x,S3,S4,S5,S6,S7,S8,S9,B) :- board(S1,n,S3,S4,S5,S6,S7,S8,S9,A), turn(o,B), cell(b,2,B), B is A+1.
-board(S1,o,S3,S4,S5,S6,S7,S8,S9,B) :- board(S1,n,S3,S4,S5,S6,S7,S8,S9,A), turn(x,B), cell(b,2,B), B is A+1.
-board(S1,n,S3,S4,S5,S6,S7,S8,S9,B) :- board(S1,n,S3,S4,S5,S6,S7,S8,S9,A), turn(_,B), cell(n,2,B), B is A+1.
-board(S1,S2,x,S4,S5,S6,S7,S8,S9,B) :- board(S1,S2,n,S4,S5,S6,S7,S8,S9,A), turn(x,B), cell(g,3,B), B is A+1.
-board(S1,S2,o,S4,S5,S6,S7,S8,S9,B) :- board(S1,S2,n,S4,S5,S6,S7,S8,S9,A), turn(o,B), cell(g,3,B), B is A+1.
-board(S1,S2,x,S4,S5,S6,S7,S8,S9,B) :- board(S1,S2,n,S4,S5,S6,S7,S8,S9,A), turn(o,B), cell(b,3,B), B is A+1.
-board(S1,S2,o,S4,S5,S6,S7,S8,S9,B) :- board(S1,S2,n,S4,S5,S6,S7,S8,S9,A), turn(x,B), cell(b,3,B), B is A+1.
-board(S1,S2,n,S4,S5,S6,S7,S8,S9,B) :- board(S1,S2,n,S4,S5,S6,S7,S8,S9,A), turn(_,B), cell(n,3,B), B is A+1.
-board(S1,S2,S3,x,S5,S6,S7,S8,S9,B) :- board(S1,S2,S3,n,S5,S6,S7,S8,S9,A), turn(x,B), cell(g,4,B), B is A+1.
-board(S1,S2,S3,o,S5,S6,S7,S8,S9,B) :- board(S1,S2,S3,n,S5,S6,S7,S8,S9,A), turn(o,B), cell(g,4,B), B is A+1.
-board(S1,S2,S3,x,S5,S6,S7,S8,S9,B) :- board(S1,S2,S3,n,S5,S6,S7,S8,S9,A), turn(o,B), cell(b,4,B), B is A+1.
-board(S1,S2,S3,o,S5,S6,S7,S8,S9,B) :- board(S1,S2,S3,n,S5,S6,S7,S8,S9,A), turn(x,B), cell(b,4,B), B is A+1.
-board(S1,S2,S3,n,S5,S6,S7,S8,S9,B) :- board(S1,S2,S3,n,S5,S6,S7,S8,S9,A), turn(_,B), cell(n,4,B), B is A+1.
-board(S1,S2,S3,S4,x,S6,S7,S8,S9,B) :- board(S1,S2,S3,S4,n,S6,S7,S8,S9,A), turn(x,B), cell(g,5,B), B is A+1.
-board(S1,S2,S3,S4,o,S6,S7,S8,S9,B) :- board(S1,S2,S3,S4,n,S6,S7,S8,S9,A), turn(o,B), cell(g,5,B), B is A+1.
-board(S1,S2,S3,S4,x,S6,S7,S8,S9,B) :- board(S1,S2,S3,S4,n,S6,S7,S8,S9,A), turn(o,B), cell(b,5,B), B is A+1.
-board(S1,S2,S3,S4,o,S6,S7,S8,S9,B) :- board(S1,S2,S3,S4,n,S6,S7,S8,S9,A), turn(x,B), cell(b,5,B), B is A+1.
-board(S1,S2,S3,S4,n,S6,S7,S8,S9,B) :- board(S1,S2,S3,S4,n,S6,S7,S8,S9,A), turn(_,B), cell(n,5,B), B is A+1.
-board(S1,S2,S3,S4,S5,x,S7,S8,S9,B) :- board(S1,S2,S3,S4,S5,n,S7,S8,S9,A), turn(x,B), cell(g,6,B), B is A+1.
-board(S1,S2,S3,S4,S5,o,S7,S8,S9,B) :- board(S1,S2,S3,S4,S5,n,S7,S8,S9,A), turn(o,B), cell(g,6,B), B is A+1.
-board(S1,S2,S3,S4,S5,x,S7,S8,S9,B) :- board(S1,S2,S3,S4,S5,n,S7,S8,S9,A), turn(o,B), cell(b,6,B), B is A+1.
-board(S1,S2,S3,S4,S5,o,S7,S8,S9,B) :- board(S1,S2,S3,S4,S5,n,S7,S8,S9,A), turn(x,B), cell(b,6,B), B is A+1.
-board(S1,S2,S3,S4,S5,n,S7,S8,S9,B) :- board(S1,S2,S3,S4,S5,n,S7,S8,S9,A), turn(_,B), cell(n,6,B), B is A+1.
-board(S1,S2,S3,S4,S5,S6,x,S8,S9,B) :- board(S1,S2,S3,S4,S5,S6,n,S8,S9,A), turn(x,B), cell(g,7,B), B is A+1.
-board(S1,S2,S3,S4,S5,S6,o,S8,S9,B) :- board(S1,S2,S3,S4,S5,S6,n,S8,S9,A), turn(o,B), cell(g,7,B), B is A+1.
-board(S1,S2,S3,S4,S5,S6,x,S8,S9,B) :- board(S1,S2,S3,S4,S5,S6,n,S8,S9,A), turn(o,B), cell(b,7,B), B is A+1.
-board(S1,S2,S3,S4,S5,S6,o,S8,S9,B) :- board(S1,S2,S3,S4,S5,S6,n,S8,S9,A), turn(x,B), cell(b,7,B), B is A+1.
-board(S1,S2,S3,S4,S5,S6,n,S8,S9,B) :- board(S1,S2,S3,S4,S5,S6,n,S8,S9,A), turn(_,B), cell(n,7,B), B is A+1.
-board(S1,S2,S3,S4,S5,S6,S7,x,S9,B) :- board(S1,S2,S3,S4,S5,S6,S7,n,S9,A), turn(x,B), cell(g,8,B), B is A+1.
-board(S1,S2,S3,S4,S5,S6,S7,o,S9,B) :- board(S1,S2,S3,S4,S5,S6,S7,n,S9,A), turn(o,B), cell(g,8,B), B is A+1.
-board(S1,S2,S3,S4,S5,S6,S7,x,S9,B) :- board(S1,S2,S3,S4,S5,S6,S7,n,S9,A), turn(o,B), cell(b,8,B), B is A+1.
-board(S1,S2,S3,S4,S5,S6,S7,o,S9,B) :- board(S1,S2,S3,S4,S5,S6,S7,n,S9,A), turn(x,B), cell(b,8,B), B is A+1.
-board(S1,S2,S3,S4,S5,S6,S7,n,S9,B) :- board(S1,S2,S3,S4,S5,S6,S7,n,S9,A), turn(_,B), cell(n,8,B), B is A+1.
-board(S1,S2,S3,S4,S5,S6,S7,S8,x,B) :- board(S1,S2,S3,S4,S5,S6,S7,S8,n,A), turn(x,B), cell(g,9,B), B is A+1.
-board(S1,S2,S3,S4,S5,S6,S7,S8,o,B) :- board(S1,S2,S3,S4,S5,S6,S7,S8,n,A), turn(o,B), cell(g,9,B), B is A+1.
-board(S1,S2,S3,S4,S5,S6,S7,S8,x,B) :- board(S1,S2,S3,S4,S5,S6,S7,S8,n,A), turn(o,B), cell(b,9,B), B is A+1.
-board(S1,S2,S3,S4,S5,S6,S7,S8,o,B) :- board(S1,S2,S3,S4,S5,S6,S7,S8,n,A), turn(x,B), cell(b,9,B), B is A+1.
-board(S1,S2,S3,S4,S5,S6,S7,S8,n,B) :- board(S1,S2,S3,S4,S5,S6,S7,S8,n,A), turn(_,B), cell(n,9,B), B is A+1.
+lose1(A) :- board(1,o,A),board(2,o,A),board(3,o,A).
+lose2(A) :- board(4,o,A),board(5,o,A),board(6,o,A).
+lose3(A) :- board(7,o,A),board(8,o,A),board(9,o,A).
+lose4(A) :- board(1,o,A),board(4,o,A),board(7,o,A).
+lose5(A) :- board(2,o,A),board(5,o,A),board(8,o,A).
+lose6(A) :- board(3,o,A),board(6,o,A),board(9,o,A).
+lose7(A) :- board(3,o,A),board(5,o,A),board(7,o,A).
+lose8(A) :- board(1,o,A),board(5,o,A),board(9,o,A).
 
+win(A) :- win1(A), \+ lose(B), turn(_,B), B < A.
+win(A) :- win2(A), \+ lose(B), turn(_,B), B < A.
+win(A) :- win3(A), \+ lose(B), turn(_,B), B < A.
+win(A) :- win4(A), \+ lose(B), turn(_,B), B < A.
+win(A) :- win5(A), \+ lose(B), turn(_,B), B < A.
+win(A) :- win6(A), \+ lose(B), turn(_,B), B < A.
+win(A) :- win7(A), \+ lose(B), turn(_,B), B < A.
+win(A) :- win8(A), \+ lose(B), turn(_,B), B < A.
 
-query(board(x,n,n,n,n,n,n,n,n,1)).
-query(board(x,n,n,n,n,n,n,n,n,2)).
-query(cell(g,1,1)).
-query(cell(g,1,2)).
+lose(A) :- lose1(A), \+ win(B), turn(_,B), B < A.
+
+board(1,n,0).
+board(2,o,0).
+board(3,o,0).
+board(4,x,0).
+board(5,n,0).
+board(6,n,0).
+board(7,o,0).
+board(8,x,0).
+board(9,n,0).
+
+0.25 :: play(1,A); 0.25 :: play(5,A); 0.25 :: play(6,A); 0.25 :: play(9,A) :- turn(_,A).
+evidence(play(9,1)).
+query(win(3)).
