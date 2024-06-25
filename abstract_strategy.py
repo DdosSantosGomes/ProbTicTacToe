@@ -24,9 +24,10 @@ class Strategy(ABC):
         ### pipeline: update ProbLog program -> query it -> find optimal cell
         # first: update the state of the board in ProbLog
         self.problog_program.update_board(self._board(state)) 
-        # second: tell ProbLog which cells are available to play in
+        # second: tell ProbLog which cells are candidates
         candidate_cells = self._choose_candidate_cells_to_test(state)
-        play_options = self._choice_dist(candidate_cells)
+        # and which cells are available to play in the current state
+        play_options = self.choice_dist([c + 1 for c in louiswork.available_cells(state)], 1)
         self.problog_program.update_play(play_options)
         # third: specify end conditions to ProbLog
         end_condition_clauses = self._end_conditions(state, candidate_cells, player=X) 
