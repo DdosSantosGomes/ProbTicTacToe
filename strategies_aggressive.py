@@ -3,8 +3,6 @@ from strategies_defensive import *
 from names import *
 from problog_utils import *
 
-import louis
-
 
 class AggressiveStrategy(Strategy):
     # note that this class is still abstract
