@@ -176,6 +176,10 @@ class ProbLogProgram:
             lose8(A) :- board(1,o,A),board(5,o,A),board(9,o,A).
                                                           
             win(A) :- win1(A) ; win2(A) ; win3(A) ; win4(A); win5(A) ; win6(A) ; win7(A) ; win8(A).
+            lose(A) :- lose1(A) ; lose2(A) ; lose3(A) ; lose4(A); lose5(A) ; lose6(A) ; lose7(A) ; lose8(A).
+                                                          
+            win(B) :- win(A), turn(_,B), B is A+1.
+            lose(B) :- lose(A), turn(_,B), B is A+1.
         """)
 
 
