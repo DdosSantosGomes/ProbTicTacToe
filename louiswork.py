@@ -1,9 +1,9 @@
-## THIS IS THE WORK OF LOUIS ABRAHAM
+## The code in this file is the work of Louis Abraham and taken from his blogpost at https://louisabraham.github.io/articles/probabilistic-tic-tac-toe. One function has been slightly modified.
 
 import random
 from functools import lru_cache
 
-
+# This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe)
 def hull_intersection(f, g):
     """
     f and g are two lists of tuples (a, b) representing linear functions
@@ -27,31 +27,24 @@ def hull_intersection(f, g):
     x, j = min((a * y + b, i) for i, (a, b) in enumerate(g))
     return (y, i), (x, j)
 
+# This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe)
 def generate_cell():
     neutral = random.choice(range(5, 35, 5))
     success = random.choice(range(30, 100 - neutral + 5, 5))
     failure = 100 - neutral - success
     return success / 100, neutral / 100, failure / 100
 
+# This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe)
 def generate_grid():
     return tuple(generate_cell() for _ in range(9))
 
+# This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe)
 def apply(state, cell, player):
     return tuple(player if i == cell else v for i, v in enumerate(state))
 
-grid = (
-    (0.65, 0.05, 0.3),
-    (0.65, 0.2, 0.15),
-    (0.55, 0.3, 0.15),
-    (0.3, 0.2, 0.5),
-    (0.3, 0.15, 0.55),
-    (0.35, 0.05, 0.6),
-    (0.3, 0.05, 0.65),
-    (0.35, 0.2, 0.45),
-    (0.45, 0.1, 0.45),
-)
-
-def winner(state): # slightly modified to include a tie condition.
+# This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe).
+# This function is slightly modified to return "t" in case of a tie.
+def winner(state): 
     for i in range(3):
         if state[i] == state[i + 3] == state[i + 6] and state[i] is not None:
             return state[i]
@@ -68,9 +61,11 @@ def winner(state): # slightly modified to include a tie condition.
         return "t"
     return None
 
+# This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe)
 def available_cells(state):
     return [i for i, v in enumerate(state) if v is None]
 
+# This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe)
 @lru_cache(3**9)
 def value(grid, state=(None,) * 9):
     """
@@ -100,25 +95,3 @@ def value(grid, state=(None,) * 9):
         g.append((neutral, xp_c))
     (v, i), (vp, ip) = hull_intersection(f, g)
     return (v, cells[i]), (vp, cells[ip])
-
-
-grid = (
-    (0.65, 0.05, 0.3),
-    (0.65, 0.2, 0.15),
-    (0.55, 0.3, 0.15),
-    (0.3, 0.2, 0.5),
-    (0.3, 0.15, 0.55),
-    (0.35, 0.05, 0.6),
-    (0.3, 0.05, 0.65),
-    (0.35, 0.2, 0.45),
-    (0.45, 0.1, 0.45),
-)
-
-# initstate = (None,) * 9
-# # print(value(grid))
-
-# x=apply(initstate, 2, "x")
-# print(x)
-
-# print(value(grid, x))
-# print(winner(("x","x","x",None,None,None,None,None,None)))
