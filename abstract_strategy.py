@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import random
 
-import louiswork
+import louis
 from problog_program_builder import ProbLogProgram
 from problog_utils import *
 from names import *
@@ -22,44 +22,33 @@ class Strategy(ABC):
     def run(self, state):
         """ Calculates the optimal move according to a strategy from a given state. """
         ### pipeline: update ProbLog program -> query it -> find optimal cell
-        # first: update the state of the board in ProbLog
+        ## first: update the state of the board in ProbLog
         self.problog_program.update_board(self._board(state)) 
-        # second: tell ProbLog which cells are candidates
+        ## second: tell ProbLog which cells are candidates
         candidate_cells = self._choose_candidate_cells_to_test(state)
         # and which cells are available to play in the current state
-        play_options = self._choice_dist([c + 1 for c in louiswork.available_cells(state)])
+        play_options = self._choice_dist([c + 1 for c in louis.available_cells(state)])
         self.problog_program.update_play(play_options)
-        # third: specify end conditions to ProbLog
+        ## third: specify end conditions to ProbLog
         end_condition_clauses = self._end_conditions(state, candidate_cells, player=X) 
         # Only keep those candidate cells that have nonempty winning conditions
-        winning_candidates = []
-        winning_clauses = []
-        # End condition clauses can only be empty in the defensive case 
-        # when it's impossible to lose
+        winning_candidates, winning_clauses = [], []
+        # End condition clauses can only be empty in the defensive case when it's impossible to lose
         if not end_condition_clauses == "":
             for i in range(len(end_condition_clauses)):
                 if not end_condition_clauses[i] == "":
                     winning_candidates.append(candidate_cells[i])
                     winning_clauses.append(end_condition_clauses[i])
-            end_condition_term = self._condition_term()
-        # If no candidates are left, select a random available cell
+        # If no candidates are left, select a random available cell without even querying ProbLog
         if winning_candidates == []:
             return random.choice(candidate_cells)
         self.problog_program.update_end_conditions(*winning_clauses)
-        # end_condition_query = query(end_condition_term)
-        end_condition_query = 'query(win(3)).'
+        end_condition_query = query(self._condition_term())
         probs = {} # dict of key = cell and value = probability of reaching the desired end condition
         ### next: query the ProbLog program with evidence of playing the candidate cells
         for cell in candidate_cells: 
             ev = evidence(function(PLAY, constant(cell), constant(1)))
-
-            # print('state:', state)
-            # print('cells to choose from:', candidate_cells)
-            # print('key:', end_condition_term + str(type(end_condition_term)))
             prob = self.problog_program.query(end_condition_query, evidence=ev)
-
-            # print('result:', prob)
-
             probs[cell] = prob
         ### last: find the optimal cell to play, and send it back to the Game simulator
         return self._choose_cell(probs)
@@ -110,7 +99,7 @@ class Strategy(ABC):
         } 
         (i,j) = coord_dict[str(cell_nr)]
         if cell_nr == 5: # 5 is middle cell: all cells are adjacent
-            return [ c + 1 for c in louiswork.available_cells(state) ]
+            return [ c + 1 for c in louis.available_cells(state) ]
         else:
             adj_coords = [(i-1,j), (i,j-1), (i+1,j), (i,j+1),
                             (i-1,j-1), (i-1,j+1), (i+1,j-1), (i+1,j+1)]
@@ -126,7 +115,7 @@ class Strategy(ABC):
         for Conquer-the-Board mode choose mode="CB". """
         if state == (None,) * 9: # If grid is empty, select all possible moves
             return list(range(1,10))
-        cells = [ c + 1 for c in louiswork.available_cells(state) ]
+        cells = [ c + 1 for c in louis.available_cells(state) ]
         chosen_cells = []
         for cell in cells:
             adj_cells = [ c for c in self._adjacent_cells(cell, state) if state[c-1] == X ]
@@ -139,7 +128,7 @@ class Strategy(ABC):
             else: 
                 return None
         if chosen_cells == []: # If none of the cells meet the conditions, default to all available cells
-            return [ c + 1 for c in louiswork.available_cells(state) ]
+            return [ c + 1 for c in louis.available_cells(state) ]
         return chosen_cells 
     
     def _win_conditons_for_chosen_cells(self, state, chosen_cells, player='x'):

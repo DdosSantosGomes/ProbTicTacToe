@@ -1,9 +1,12 @@
-## The code in this file is the work of Louis Abraham and taken from his blogpost at https://louisabraham.github.io/articles/probabilistic-tic-tac-toe. One function has been slightly modified.
+"""
+The code in this file is the work of Louis Abraham 
+and taken from his blogpost at https://louisabraham.github.io/articles/probabilistic-tic-tac-toe. 
+One function has been slightly modified.
+"""
 
 import random
 from functools import lru_cache
 
-# This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe)
 def hull_intersection(f, g):
     """
     f and g are two lists of tuples (a, b) representing linear functions
@@ -11,7 +14,10 @@ def hull_intersection(f, g):
     y = max_i f_i(x)
     x = min_i g_i(y)
 
-    Also returns the indices of the optimal functions
+    Also returns the indices of the optimal functions.
+
+    This is the work of Louis Abahram 
+    (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe)
     """
     a, b = 0, 1
     while b - a > 1e-9:
@@ -27,24 +33,25 @@ def hull_intersection(f, g):
     x, j = min((a * y + b, i) for i, (a, b) in enumerate(g))
     return (y, i), (x, j)
 
-# This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe)
 def generate_cell():
+    """ This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe) """
     neutral = random.choice(range(5, 35, 5))
     success = random.choice(range(30, 100 - neutral + 5, 5))
     failure = 100 - neutral - success
     return success / 100, neutral / 100, failure / 100
 
-# This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe)
 def generate_grid():
+    """ This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe) """
     return tuple(generate_cell() for _ in range(9))
 
-# This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe)
 def apply(state, cell, player):
+    """ This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe) """
     return tuple(player if i == cell else v for i, v in enumerate(state))
 
-# This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe).
-# This function is slightly modified to return "t" in case of a tie.
+
 def winner(state): 
+    """ This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe).
+    This function is slightly modified to return "t" in case of a tie. """
     for i in range(3):
         if state[i] == state[i + 3] == state[i + 6] and state[i] is not None:
             return state[i]
@@ -61,15 +68,16 @@ def winner(state):
         return "t"
     return None
 
-# This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe)
 def available_cells(state):
+    """ This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe) """
     return [i for i, v in enumerate(state) if v is None]
 
-# This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe)
 @lru_cache(3**9)
 def value(grid, state=(None,) * 9):
     """
-    Returns V(s) and V'(s) along with the optimal actions
+    Returns V(s) and V'(s) along with the optimal actions.
+
+    This is the work of Louis Abahram (see: https://louisabraham.github.io/articles/probabilistic-tic-tac-toe).
     """
     w = winner(state)
     if w == "x":

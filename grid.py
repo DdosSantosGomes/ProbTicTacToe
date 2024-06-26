@@ -1,4 +1,4 @@
-import louiswork
+import louis
 
 class ProbTicTacToe:
     """
@@ -12,5 +12,5 @@ class ProbTicTacToe:
         self.grid = self._generate_grid()
 
     def _generate_grid(self):
-        return louiswork.generate_grid()
+        return louis.generate_grid()
     

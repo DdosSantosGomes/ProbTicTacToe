@@ -1,11 +1,12 @@
 import random 
+import multiprocess as mp
 
-import louiswork
+import louis
 
 from names import E, T, O, X
 from strategies_aggressive import *
 from strategies_defensive import *
-import multiprocess as mp
+
 
 class Game:
     """
@@ -20,7 +21,7 @@ class Game:
         if opposing == 'random':
             self.opposing_strategy = self._random_choice()
         elif opposing == 'louis':
-            self.opposing_strategy = lambda grid,state : louiswork.value(grid,state)[1][1]
+            self.opposing_strategy = lambda grid,state : louis.value(grid,state)[1][1]
         else:
             raise UnsupportedOpposingStrategyException('The opposing strategy {} is not supported.'.format(opposing))
 
@@ -33,28 +34,25 @@ class Game:
     def _play_one_game(self, grid, first_player, state, strategy):
         if first_player == E:
             first_player = random.choice((X,O))
-        while louiswork.winner(state) == None:
+        while louis.winner(state) == None:
             if first_player == X:
                 cell = strategy.run(state) - 1 # input the strategy we use here
-                # print('selected move:', cell)
                 state = self._make_move(X, O, state, cell, grid)
                 first_player = O
             elif first_player == O:
-                # (_, _), (_, cell) = louiswork.value(grid, state)
                 cell = self.opposing_strategy(grid,state)
-                # print('selected move:', cell)
                 state = self._make_move(O, X, state, cell, grid)
                 first_player = X
         else:
-            return louiswork.winner(state)
+            return louis.winner(state)
     
     def _make_move(self, player, opponent, state, cell, grid):
         success, _, failure = grid[cell]
         choice = random.choice(range(1, 100)) / 100
         if choice <= success:
-            return louiswork.apply(state,cell,player)
+            return louis.apply(state,cell,player)
         elif choice > success and choice <= success + failure: 
-            return louiswork.apply(state,cell,opponent)
+            return louis.apply(state,cell,opponent)
         else: 
             return state
 
@@ -63,7 +61,7 @@ class Game:
         and with the given strategy, to be passed as class constructor. """
         gameswon_x, gameswon_o, games_tied = 0, 0, 0
         for _ in range(self.games):
-            grid = louiswork.generate_grid()
+            grid = louis.generate_grid()
             s = strategy(grid)
             initial_state = (None,) * 9
             result = self._play_one_game(grid, player, initial_state, s)
@@ -87,7 +85,7 @@ class UnexpectedGameResultException(Exception):
     pass
     
 if __name__ == "__main__":
-    number_games = 1
+    number_games = 30
 
     ## playing our strategies against LOUIS
     wf_v_louis = mp.Process(target=Game(games=number_games,opposing='louis').simulate, args=(E,WinFast))
@@ -95,7 +93,7 @@ if __name__ == "__main__":
     tf_v_louis = mp.Process(target=Game(games=number_games,opposing='louis').simulate, args=(E,TieFast))
     cbd_v_louis = mp.Process(target=Game(games=number_games,opposing='louis').simulate, args=(E,ConquerBoardDefensive))
 
-    # ## playing our strategies against RANDOM
+    ## playing our strategies against RANDOM
     wf_v_rand = mp.Process(target=Game(games=number_games,opposing='random').simulate, args=(E,WinFast))
     cba_v_rand = mp.Process(target=Game(games=number_games,opposing='random').simulate, args=(E,ConquerBoardAggressive))
     tf_v_rand = mp.Process(target=Game(games=number_games,opposing='random').simulate, args=(E,TieFast))
@@ -109,3 +107,4 @@ if __name__ == "__main__":
     cba_v_rand.start()
     tf_v_rand.start()
     cbd_v_rand.start()
+    

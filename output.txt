@@ -1,8 +1,0 @@
-WinFast                vs. random | x won 646 games, o won 317 games, 37 games tied
-ConquerBoardAggressive vs. random | x won 676 games, o won 285 games, 39 games tied
-WinFast                vs. louis  | x won 358 games, o won 601 games, 41 games tied
-TieFast                vs. random | x won 340 games, o won 565 games, 95 games tied
-TieFast                vs. louis  | x won 145 games, o won 814 games, 41 games tied
-ConquerBoardDefensive  vs. random | x won 313 games, o won 559 games, 128 games tied
-ConquerBoardAggressive vs. louis  | x won 387 games, o won 573 games, 40 games tied
-ConquerBoardDefensive  vs. louis  | x won 118 games, o won 809 games, 73 games tied

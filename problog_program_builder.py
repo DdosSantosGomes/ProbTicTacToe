@@ -190,6 +190,6 @@ class ProbLogRuntimeException(Exception):
     pass
 
 if __name__ == "__main__": 
-    # game = ProbLogProgram(None)
+    # game = ProbLogProgram(louis.generate_grid())
     # print(game._get_program())
     pass

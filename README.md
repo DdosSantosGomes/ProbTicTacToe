@@ -5,7 +5,7 @@ Probabilistic Tic-Tac-Toe is an online game developed by [Cameron Sun](https://w
 ## Setup
 
 You need to install the Python ProbLog package from [here](https://dtai.cs.kuleuven.be/problog/tutorial/advanced/01_python_interface.html).
-On our MacBooks, this resulted in some errors, so we had to create it in a virtual environment and run our code in it. 
+On our (Apple Silicon) MacBooks, this resulted in some errors, so we had to create it in a virtual environment and run our code in it. 
 This is how we did it: 
   - `python3 -m venv ~/.venv` in the root directory
   - `source ~/.venv/bin/activate`

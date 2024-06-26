@@ -3,7 +3,7 @@ from strategies_defensive import *
 from names import *
 from problog_utils import *
 
-import louiswork
+import louis
 
 
 class AggressiveStrategy(Strategy):
@@ -31,7 +31,3 @@ class ConquerBoardAggressive(AggressiveStrategy):
     def _choose_candidate_cells_to_test(self, state):
         return self._cells_aggressive(state, mode="CB")
     
-    
-if __name__ == "__main__":
-    strategy = WinFast(louiswork.generate_grid()) 
-    print(strategy.run(("x", "o", "x", None, None, None, "x", None, None)))
