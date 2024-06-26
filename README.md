@@ -11,3 +11,5 @@ This is how we did it:
   - `source ~/.venv/bin/activate`
   - actually run the program
   - `deactivate` to exit the virtual environment
+  
+Please use Python 3.12.
