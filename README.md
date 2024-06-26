@@ -11,5 +11,5 @@ This is how we did it:
   - `source ~/.venv/bin/activate`
   - actually run the program
   - `deactivate` to exit the virtual environment
-  
-Please use Python 3.12.
+
+Please use Python 3.12. Some code is borrowed from Louis Abraham (see his blogpost [here](https://louisabraham.github.io/articles/probabilistic-tic-tac-toe)). 
