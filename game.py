@@ -36,7 +36,7 @@ class Game:
             first_player = random.choice((X,O))
         while louis.winner(state) == None:
             if first_player == X:
-                cell = strategy.run(state) - 1 # input the strategy we use here
+                cell = strategy.run(state) - 1 
                 state = self._make_move(X, O, state, cell, grid)
                 first_player = O
             elif first_player == O:
@@ -85,7 +85,7 @@ class UnexpectedGameResultException(Exception):
     pass
     
 if __name__ == "__main__":
-    number_games = 30
+    number_games = 1000
 
     ## playing our strategies against LOUIS
     wf_v_louis = mp.Process(target=Game(games=number_games,opposing='louis').simulate, args=(E,WinFast))
