@@ -4,6 +4,10 @@ Probabilistic Tic-Tac-Toe is an online game developed by [Cameron Sun](https://w
 
 Some code is borrowed from Louis Abraham (see his blogpost [here](https://louisabraham.github.io/articles/probabilistic-tic-tac-toe)) - this is made explicit wherever relevant.
 
+## How to run
+
+`python3 probtictactoe.py`; use `-h` for help.
+
 ## Setup
 
 ### Short version
